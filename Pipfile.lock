@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1841b918d32242f3aa3e1161e7e0181f256c8b664366e551e28bc24408d11185"
+            "sha256": "8d505b1e81b2d763d09ad33dd494a023f9a789c0af5721950e1e3a66c7e80a54"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -99,7 +99,7 @@
                 "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
                 "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.15.0"
         },
         "wsgidav": {
@@ -111,5 +111,10 @@
             "version": "==3.0.3"
         }
     },
-    "develop": {}
+    "develop": {
+        "webdav-camac": {
+            "editable": true,
+            "path": "."
+        }
+    }
 }
