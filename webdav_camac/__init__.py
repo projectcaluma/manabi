@@ -1,21 +1,27 @@
-from wsgidav.dc.simple_dc import SimpleDomainController
-from wsgidav.fs_dav_provider import FilesystemProvider
+from functools import partial
+from http.cookies import SimpleCookie
+
 from wsgidav.middleware import BaseMiddleware
+
+
+def set_cookie(start_response, status, headers, exc_info=None):
+    cookie = SimpleCookie()
+    cookie["session"] = "this_session"
+    # TODO make cookie secure, maybe this:
+    # cookie["session"]["secure"] = True
+    # cookie["session"]["httponly"] = True
+    headers.append(str(cookie).split(": "))
+    return start_response(status, headers, exc_info)
 
 
 class CamacAuthenticator(BaseMiddleware):
     def __call__(self, environ, start_response):
         print("hello middleware")
-        return self.next_app(environ, start_response)
 
+        if "HTTP_COOKIE" in environ:
+            cookie = SimpleCookie(environ["HTTP_COOKIE"])
+            if "session" in cookie:
+                print("Sucess, cookie was stored")
+                return self.next_app(environ, start_response)
 
-class CamacDomainCotroller(SimpleDomainController):
-    def require_authentication(self, realm, environ):
-        print("hello controller")
-        return False
-
-
-class CamacProvider(FilesystemProvider):
-    def get_resource_inst(self, path, environ):
-        print("hello provider")
-        return super().get_resource_inst(path, environ)
+        return self.next_app(environ, partial(set_cookie, start_response))
