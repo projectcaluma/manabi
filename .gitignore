@@ -1,3 +1,4 @@
 /build/
 /webdav_camac.egg-info/
 __pycache__
+/dist
