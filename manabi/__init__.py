@@ -1,7 +1,10 @@
 from functools import partial
 from http.cookies import SimpleCookie
 
+from cryptography.fernet import Fernet
 from wsgidav.middleware import BaseMiddleware
+
+from .encode import tostring
 
 
 def set_cookie(start_response, status, headers, exc_info=None):
@@ -25,3 +28,7 @@ class ManabiAuthenticator(BaseMiddleware):
                 return self.next_app(environ, start_response)
 
         return self.next_app(environ, partial(set_cookie, start_response))
+
+
+def keygen():
+    print(tostring(Fernet.generate_key()))
