@@ -10,7 +10,7 @@ from wsgidav.error_printer import ErrorPrinter
 from wsgidav.request_resolver import RequestResolver
 from wsgidav.wsgidav_app import WsgiDAVApp
 
-from . import CamacAuthenticator
+from . import ManabiAuthenticator
 
 _server = None
 _server_dir = Path("/tmp/296fe33fcca")
@@ -35,7 +35,7 @@ def get_config(server_dir):
         "middleware_stack": [
             WsgiDavDebugFilter,
             ErrorPrinter,
-            CamacAuthenticator,
+            ManabiAuthenticator,
             WsgiDavDirBrowser,
             RequestResolver,
         ],

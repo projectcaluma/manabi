@@ -14,7 +14,7 @@ def set_cookie(start_response, status, headers, exc_info=None):
     return start_response(status, headers, exc_info)
 
 
-class CamacAuthenticator(BaseMiddleware):
+class ManabiAuthenticator(BaseMiddleware):
     def __call__(self, environ, start_response):
         print("hello middleware")
 

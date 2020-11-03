@@ -1,5 +1,5 @@
-Webdav Camac
-============
+Manabi
+======
 
 
 Some ways to plug into wsgidav
@@ -13,19 +13,19 @@ from wsgidav.fs_dav_provider import FilesystemProvider
 from wsgidav.middleware import BaseMiddleware
 
 
-class CamacAuthenticator(BaseMiddleware):
+class ManabiAuthenticator(BaseMiddleware):
     def __call__(self, environ, start_response):
         print("hello middleware")
         return self.next_app(environ, start_response)
 
 
-class CamacDomainCotroller(SimpleDomainController):
+class ManabiDomainCotroller(SimpleDomainController):
     def require_authentication(self, realm, environ):
         print("hello controller")
         return False
 
 
-class CamacProvider(FilesystemProvider):
+class ManabiProvider(FilesystemProvider):
     def get_resource_inst(self, path, environ):
         print("hello provider")
         return super().get_resource_inst(path, environ)
@@ -38,16 +38,16 @@ config = {
     "host": "0.0.0.0",
     "port": 8080,
     "provider_mapping": {
-        "/": CamacProvider("/home/sonder"),
+        "/": ManabiProvider("/home/sonder"),
     },
     "verbose": 1,
     "middleware_stack": [
         WsgiDavDebugFilter,
         ErrorPrinter,
-        CamacAuthenticator,
+        ManabiAuthenticator,
         WsgiDavDirBrowser,
         RequestResolver,
     ],
-    "http_authenticator": {"domain_controller": CamacDomainCotroller},
+    "http_authenticator": {"domain_controller": ManabiDomainCotroller},
 }
 ```
