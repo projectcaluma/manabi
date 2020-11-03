@@ -1,3 +1,4 @@
+import shutil
 from functools import partial
 from pathlib import Path
 from threading import Thread
@@ -14,12 +15,14 @@ from . import ManabiAuthenticator
 
 _server = None
 _server_dir = Path("/tmp/296fe33fcca")
-module_dir = Path(__file__).parent
+_module_dir = Path(__file__).parent
+_test_file = Path(_module_dir, "data", "asdf.docx")
 
 
 def get_server_dir():
     if not _server_dir.exists():
         _server_dir.mkdir()
+        shutil.copy(_test_file, _server_dir)
 
     return _server_dir
 
