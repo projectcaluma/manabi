@@ -52,7 +52,7 @@ def get_server(config):
         dav_app = WsgiDAVApp(config)
 
         path_map = {
-            "/mock": dav_app,
+            # "/test": test_app,  # TODO web-server for test with a office-software
             "/dav": dav_app,
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)
