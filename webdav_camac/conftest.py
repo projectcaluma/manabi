@@ -14,19 +14,22 @@ from . import CamacAuthenticator
 
 _server = None
 _server_dir = Path("/tmp/296fe33fcca")
+module_dir = Path(__file__).parent
 
 
-@pytest.fixture()
-def config():
-    return get_config()
+def get_server_dir():
+    if not _server_dir.exists():
+        _server_dir.mkdir()
+
+    return _server_dir
 
 
-def get_config():
+def get_config(server_dir):
     return {
         "host": "0.0.0.0",
         "port": 8080,
         "provider_mapping": {
-            "/": str(_server_dir),
+            "/": str(server_dir),
         },
         "verbose": 1,
         "middleware_stack": [
@@ -43,7 +46,6 @@ def get_config():
 def get_server(config):
     global _server
     if not _server:
-        _server_dir.mkdir(exist_ok=True)
         dav_app = WsgiDAVApp(config)
 
         path_map = {
@@ -65,6 +67,16 @@ def run_server(server):
         server.start()
     finally:
         server.stop()
+
+
+@pytest.fixture()
+def server_dir():
+    return get_server_dir()
+
+
+@pytest.fixture()
+def config(server_dir):
+    return get_config(server_dir)
 
 
 @pytest.fixture()
