@@ -1,4 +1,4 @@
-from .encode import fromstring, tostring
+from .util import fromstring, tostring
 
 
 def test_hello_world():

@@ -4,7 +4,7 @@ from http.cookies import SimpleCookie
 from cryptography.fernet import Fernet
 from wsgidav.middleware import BaseMiddleware
 
-from .encode import tostring
+from .util import tostring
 
 
 def set_cookie(start_response, status, headers, exc_info=None):

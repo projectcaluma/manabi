@@ -62,14 +62,8 @@ def get_server(config):
         }
 
         _server = wsgi.Server(**server_args)
+        _server.prepare()
     return _server
-
-
-def run_server(server):
-    try:
-        server.start()
-    finally:
-        server.stop()
 
 
 @pytest.fixture()
@@ -84,8 +78,11 @@ def config(server_dir):
 
 @pytest.fixture()
 def server(config):
+    global _server
     server = get_server(config)
-    server.prepare()
-    Thread(target=partial(server, run_server)).run()
+    thread = Thread(target=partial(server.serve))
+    thread.start()
     yield
-    _server.interrupt = True
+    server.stop()
+    thread.join()
+    _server = None
