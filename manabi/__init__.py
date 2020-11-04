@@ -1,7 +1,7 @@
 from functools import partial
 from http.cookies import SimpleCookie
 
-from cryptography.fernet import Fernet
+# from cryptography.fernet import Fernet
 from wsgidav.middleware import BaseMiddleware
 
 from .util import tostring

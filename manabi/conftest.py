@@ -43,7 +43,7 @@ def get_config(server_dir):
             WsgiDavDirBrowser,
             RequestResolver,
         ],
-        "salt": "dc97559ff0199fe4b69bc1612296fe33fccaea04c27e9014250b726348eb197d",
+        "manabi": {"key": "4BOzP21QBk7PrKsT0AGyAdNqrICDmw8NNDZknw3wqZv"},
     }
 
 

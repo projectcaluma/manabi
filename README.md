@@ -1,6 +1,21 @@
 Manabi
 ======
 
+Install
+-------
+
+Make sure libsodium exists on the system, for example execute:
+
+```bash
+apk add --no-cache libsodium
+apt-get install -y libsodium
+```
+
+Config
+------
+
+Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
+shared between the caluma/alexandria backend and the WebDAV server.
 
 Some ways to plug into wsgidav
 ------------------------------

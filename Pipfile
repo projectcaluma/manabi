@@ -20,6 +20,3 @@ cheroot = "*"
 
 [packages]
 manabi = {editable = true, path = "."}
-
-[requires]
-python_version = "3.7"
