@@ -34,6 +34,8 @@ def test_make_token(tamper, expire, path, config):
         assert check_token(key, data, path, ttl) == check
 
 
+# TODO add encode test
+# TODO add ttl test
 # hypothesis doesn't like fixtures anymore
 @pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")
 @given(text(min_size=1, max_size=32))
