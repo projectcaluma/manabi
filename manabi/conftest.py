@@ -31,6 +31,7 @@ def get_config(server_dir):
     return {
         "host": "0.0.0.0",
         "port": 8080,
+        "mount_path": "/dav",
         "provider_mapping": {
             "/": str(server_dir),
         },
