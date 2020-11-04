@@ -2,7 +2,7 @@ import time
 
 from branca import Branca
 
-from .util import fromstring, short_hash, tostring
+from .util import fromstring, short_hash
 
 
 def make_token(key, path, now=None):

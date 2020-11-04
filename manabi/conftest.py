@@ -1,4 +1,6 @@
+import os
 import shutil
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from threading import Thread
@@ -65,6 +67,14 @@ def get_server(config):
         _server = wsgi.Server(**server_args)
         _server.prepare()
     return _server
+
+
+@contextmanager
+def branca_impl():
+    cwd = Path().cwd()
+    os.chdir(Path(_module_dir.parent, "branca-test"))
+    yield
+    os.chdir(cwd)
 
 
 @pytest.fixture()
