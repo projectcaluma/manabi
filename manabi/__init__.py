@@ -41,4 +41,5 @@ class ManabiAuthenticator(BaseMiddleware):
 
 
 def keygen():
-    print(tostring(Fernet.generate_key()))
+    with open("/dev/random", "rb") as f:
+        print(tostring(f.read(32)))
