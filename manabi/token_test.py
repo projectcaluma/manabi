@@ -3,7 +3,7 @@ from subprocess import PIPE, run
 
 import pytest
 from branca import Branca
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis.strategies import binary, booleans, text
 
 from .conftest import branca_impl, get_config, get_server_dir
@@ -38,9 +38,14 @@ def test_token_roundtrip(tamper, expire, path):
     token_roundtrip(tamper, expire, path)
 
 
+@given(booleans(), booleans(), text(min_size=1, max_size=32))
+def test_token_roundtrip_hyp(tamper, expire, path):
+    token_roundtrip(tamper, expire, path)
+
+
 @given(binary(min_size=1, max_size=32))
-def test_branca_roundtrip(path):
-    string = b"huhu"
+def test_branca_roundtrip(string):
+    assume(not string.startswith(b"\x00"))
     config = get_config(get_server_dir())
     key = config["manabi"]["key"]
     f = Branca(fromstring(key))
@@ -63,11 +68,12 @@ def test_other_impl_decode(cargo):
     other_impl_decode("hello world".encode("UTF-8"))
 
 
-# TODO add encode test
-# TODO add ttl test
-# TODO add binary test
+# TODO test binary data when branca-rust supports binary data:
+# https://github.com/return/branca/issues/10
 # hypothesis doesn't like fixtures anymore
 @pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")
-@given(text(min_size=1, max_size=32))
+@given(text(min_size=1))
 def test_other_impl_decode_hyp(cargo, string):
-    other_impl_decode(string.encode("UTF-8"))
+    string = string.encode("UTF-8")
+    assume(not string.startswith(b"\x00"))
+    other_impl_decode(string)

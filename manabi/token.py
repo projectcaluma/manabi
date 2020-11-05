@@ -9,8 +9,6 @@ def make_token(key, path, now=None):
     f = Branca(fromstring(key))
     p = path.encode("UTF-8")
     ph = short_hash(p)
-    if not now:
-        now = int(time.time())
     ct = f.encode(ph, now)
     return ct
 
