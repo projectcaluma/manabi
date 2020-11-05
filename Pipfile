@@ -17,6 +17,8 @@ flake8-string-format = "*"
 flake8-tuple = "*"
 python-language-server = "*"
 cheroot = "*"
+requests = "*"
+hypothesis = "*"
 
 [packages]
 manabi = {editable = true, path = "."}
