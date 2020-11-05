@@ -1,4 +1,6 @@
+import calendar
 from collections import namedtuple
+from datetime import datetime
 from email.utils import formatdate
 from functools import partial
 from http.cookies import SimpleCookie
@@ -7,7 +9,9 @@ from wsgidav.middleware import BaseMiddleware
 
 from .token import Token
 
-CookieInfo = namedtuple("CookieInfo", ("start_response", "secure", "path", "token"))
+CookieInfo = namedtuple(
+    "CookieInfo", ("start_response", "secure", "path", "token", "ttl")
+)
 
 _error_message_403 = """
 <html>
@@ -28,9 +32,10 @@ def get_rfc1123_time(secs=None):
 def set_cookie(info, status, headers, exc_info=None):
     path = info.path
     cookie = SimpleCookie()
-    cookie[info.path] = info.token
-    # TODO expire ttl_refresh * 2
-    # TODO lock_refresh = ttl_refresh
+    cookie[path] = info.token
+    date = datetime.utcnow()
+    unixtime = calendar.timegm(date.utctimetuple())
+    cookie[path]["expires"] = get_rfc1123_time(unixtime + info.ttl)
     if info.secure:
         cookie[path]["secure"] = True
         cookie[path]["httponly"] = True
@@ -79,7 +84,8 @@ class ManabiAuthenticator(BaseMiddleware):
         if not (token and path):
             return self.access_denied(start_response)
 
-        t = Token(environ["wsgidav.config"])
+        config = environ["wsgidav.config"]
+        t = Token(config)
 
         check = t.check(token, path)
         if not check:
@@ -92,5 +98,11 @@ class ManabiAuthenticator(BaseMiddleware):
 
         self.fix_environ(environ, token)
         token = t.make(path)
-        info = CookieInfo(start_response, self.manabi_secure(), path, token)
+        info = CookieInfo(
+            start_response,
+            self.manabi_secure(),
+            path,
+            token,
+            config["manabi"]["ttl_refresh"],
+        )
         return self.next_app(environ, partial(set_cookie, info))
