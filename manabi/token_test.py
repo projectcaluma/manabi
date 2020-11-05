@@ -49,7 +49,6 @@ def test_token_roundtrip_hyp(tamper, expire, path):
 
 @given(binary(min_size=1, max_size=32))
 def test_branca_roundtrip(string):
-    assume(not string.startswith(b"\x00"))
     config = get_config()
     key = config["manabi"]["key"]
     f = Branca(fromstring(key))

@@ -37,7 +37,7 @@ def get_config(server_dir):
         "provider_mapping": {
             "/": str(server_dir),
         },
-        "verbose": 1,
+        "verbose": 3,
         "middleware_stack": [
             WsgiDavDebugFilter,
             ErrorPrinter,
@@ -45,6 +45,7 @@ def get_config(server_dir):
             WsgiDavDirBrowser,
             RequestResolver,
         ],
+        "enable_loggers": ["lock_manager", "request_resolver"],
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "ttl_refresh": 600,

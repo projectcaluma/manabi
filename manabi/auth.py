@@ -3,7 +3,9 @@ from collections import namedtuple
 from datetime import datetime
 from functools import partial
 from http.cookies import SimpleCookie
+from unittest.mock import MagicMock
 
+from wsgidav import http_authenticator
 from wsgidav.middleware import BaseMiddleware
 
 from .token import Token
@@ -41,6 +43,9 @@ def set_cookie(info, status, headers, exc_info=None):
 
 
 class ManabiAuthenticator(BaseMiddleware):
+    def get_domain_controller(self):
+        return MagicMock()
+
     def manabi_secure(self):
         config = self.config
         if "manabi" not in config:
