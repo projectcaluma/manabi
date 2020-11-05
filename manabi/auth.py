@@ -66,7 +66,8 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def fix_environ(self, environ, token):
+    def fix_environ(self, environ, token, path):
+        environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
         repl = f"/{token}"
         for var in ("REQUEST_URI", "PATH_INFO"):
             environ[var] = environ[var].replace(repl, "")
@@ -74,37 +75,39 @@ class ManabiAuthenticator(BaseMiddleware):
     def __call__(self, environ, start_response):
         path_info = environ["PATH_INFO"]
         token, _, path = path_info.strip("/").partition("/")
+
         cookie = None
         if "HTTP_COOKIE" in environ:
             cookie = SimpleCookie(environ["HTTP_COOKIE"])
-        if not path:
-            path = token.strip("/")
-            if cookie:
-                token = cookie.get(path)
-
-        if not (token and path):
-            return self.access_denied(start_response)
-
         config = environ["wsgidav.config"]
         t = Token(config)
 
-        check = t.check(token, path)
-        if not check:
-            if cookie:
-                token = cookie.get(path)
+        if not path:
+            # A directory-listing
+            check = t.check(token)
+            if not check and cookie:
+                check = t.refresh_check(token)
+
+            if not check:
+                return self.access_denied(start_response)
+            self.fix_environ(environ, token, path)
+            # Directory-listing does not refresh the token
+            return self.next_app(environ, start_response)
+        else:
+            # A file-access
+            check = t.check(token, path)
+            if not check and cookie:
                 check = t.refresh_check(token, path)
 
-        if not check:
-            return self.access_denied(start_response)
-
-        self.fix_environ(environ, token)
-        environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
-        token = t.make(path)
-        info = CookieInfo(
-            start_response,
-            self.manabi_secure(),
-            path,
-            token,
-            config["manabi"]["ttl_refresh"],
-        )
-        return self.next_app(environ, partial(set_cookie, info))
+            if not check:
+                return self.access_denied(start_response)
+            self.fix_environ(environ, token, path)
+            token = t.make(path)
+            info = CookieInfo(
+                start_response,
+                self.manabi_secure(),
+                path,
+                token,
+                config["manabi"]["ttl_refresh"],
+            )
+            return self.next_app(environ, partial(set_cookie, info))

@@ -15,11 +15,11 @@ class Token:
     def check_ttl(self, data, path=None, ttl=None):
         try:
             if path is None:
-                check_token(self.key, data, path, ttl)
+                check_token(self.key, data, "", ttl)
                 return True
             else:
                 return check_token(self.key, data, path, ttl)
-        except RuntimeError:
+        except (RuntimeError, ValueError):
             return False
 
     def check(self, data, path=None):
