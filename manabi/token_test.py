@@ -6,13 +6,17 @@ from branca import Branca
 from hypothesis import assume, given
 from hypothesis.strategies import binary, booleans, text
 
-from .conftest import branca_impl, get_config, get_server_dir
+from . import mock
 from .token import check_token, make_token
 from .util import fromstring
 
 
+def get_config():
+    return mock.get_config(mock.get_server_dir())
+
+
 def token_roundtrip(tamper, expire, path):
-    config = get_config(get_server_dir())
+    config = get_config()
     key = config["manabi"]["key"]
     ttl = None
     check = True
@@ -46,7 +50,7 @@ def test_token_roundtrip_hyp(tamper, expire, path):
 @given(binary(min_size=1, max_size=32))
 def test_branca_roundtrip(string):
     assume(not string.startswith(b"\x00"))
-    config = get_config(get_server_dir())
+    config = get_config()
     key = config["manabi"]["key"]
     f = Branca(fromstring(key))
     res = f.decode(f.encode(string))
@@ -54,8 +58,8 @@ def test_branca_roundtrip(string):
 
 
 def other_impl_decode(string):
-    with branca_impl():
-        config = get_config(get_server_dir())
+    with mock.branca_impl():
+        config = get_config()
         key = config["manabi"]["key"]
         f = Branca(fromstring(key))
         ct = f.encode(string)
