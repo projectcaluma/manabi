@@ -5,7 +5,6 @@ from functools import partial
 from http.cookies import SimpleCookie
 from unittest.mock import MagicMock
 
-from wsgidav import http_authenticator
 from wsgidav.middleware import BaseMiddleware
 
 from .token import Token
