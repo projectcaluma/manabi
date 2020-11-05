@@ -85,11 +85,12 @@ class ManabiAuthenticator(BaseMiddleware):
         if not check:
             if cookie:
                 token = cookie.get(path)
-                check = t.check(token, path)
+                check = t.refresh_check(token, path)
 
         if not check:
             return self.access_denied(start_response)
 
         self.fix_environ(environ, token)
+        token = t.make(path)
         info = CookieInfo(start_response, self.manabi_secure(), path, token)
         return self.next_app(environ, partial(set_cookie, info))

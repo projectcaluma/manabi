@@ -15,12 +15,8 @@ class Token:
     def check(self, data, path):
         return check_token(self.key, data, path, self.ttl_init)
 
-    def refresh(self, data, path):
-        ok = check_token(self.key, data, path, self.ttl_refresh)
-        if ok:
-            return self.make(path)
-        else:
-            raise RuntimeError("Cannot refresh token")
+    def refresh_check(self, data, path):
+        return check_token(self.key, data, path, self.ttl_refresh)
 
 
 def make_token(key, path, now=None):
