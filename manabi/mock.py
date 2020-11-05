@@ -1,6 +1,7 @@
 import os
 import shutil
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
 from cheroot import wsgi
@@ -11,6 +12,8 @@ from wsgidav.request_resolver import RequestResolver
 from wsgidav.wsgidav_app import WsgiDAVApp
 
 from .auth import ManabiAuthenticator
+from .token import Token
+from .util import get_rfc1123_time
 
 _server = None
 _server_dir = Path("/tmp/296fe33fcca")
@@ -45,9 +48,41 @@ def get_config(server_dir):
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "ttl_refresh": 600,
-            "ttl_init": 60,
+            "ttl_init": 600,
         },
     }
+
+
+def serve_document(config, environ, start_response):
+    path = "asdf.docx"
+    token = Token(config).make(path)
+    body = f"""
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>WebDAV test page</title>
+</head>
+
+<body>
+    <a href="/dav/{token}/{path}">asdf.docx</a>
+</body>
+</html>
+""".strip().encode(
+        "UTF-8"
+    )
+
+    start_response(
+        "200 Ok",
+        [
+            ("Content-Type", "text/html"),
+            ("Content-Length", str(len(body))),
+            ("Date", get_rfc1123_time()),
+        ],
+    )
+    return [body]
 
 
 def get_server(config):
@@ -56,7 +91,9 @@ def get_server(config):
         dav_app = WsgiDAVApp(config)
 
         path_map = {
-            # "/test": test_app,  # TODO web-server for test with a office-software
+            "/test": partial(
+                serve_document, config
+            ),  # TODO web-server for test with a office-software
             "/dav": dav_app,
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)

@@ -1,13 +1,13 @@
 import calendar
 from collections import namedtuple
 from datetime import datetime
-from email.utils import formatdate
 from functools import partial
 from http.cookies import SimpleCookie
 
 from wsgidav.middleware import BaseMiddleware
 
 from .token import Token
+from .util import get_rfc1123_time
 
 CookieInfo = namedtuple(
     "CookieInfo", ("start_response", "secure", "path", "token", "ttl")
@@ -20,13 +20,9 @@ _error_message_403 = """
         <h1>403 Forbidden</h1>
     </body>
 </html>
-""".strip()
-
-
-def get_rfc1123_time(secs=None):
-    """Return <secs> in rfc 1123 date/time format (pass secs=None for current date)."""
-    # GC issue #20: time string must be locale independent
-    return formatdate(timeval=secs, localtime=False, usegmt=True)
+""".strip().encode(
+    "UTF-8"
+)
 
 
 def set_cookie(info, status, headers, exc_info=None):
@@ -36,6 +32,7 @@ def set_cookie(info, status, headers, exc_info=None):
     date = datetime.utcnow()
     unixtime = calendar.timegm(date.utctimetuple())
     cookie[path]["expires"] = get_rfc1123_time(unixtime + info.ttl)
+    # TODO set locktimeout
     if info.secure:
         cookie[path]["secure"] = True
         cookie[path]["httponly"] = True
@@ -54,7 +51,7 @@ class ManabiAuthenticator(BaseMiddleware):
         return manabi["secure"]
 
     def access_denied(self, start_response):
-        body = _error_message_403.encode("UTF-8")
+        body = _error_message_403
         start_response(
             "403 Forbidden",
             [
