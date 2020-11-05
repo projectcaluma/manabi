@@ -4,7 +4,7 @@ from subprocess import PIPE, run
 import pytest
 from branca import Branca
 from hypothesis import given
-from hypothesis.strategies import binary, text
+from hypothesis.strategies import binary, booleans, text
 
 from .conftest import branca_impl, get_config, get_server_dir
 from .token import check_token, make_token
@@ -15,7 +15,6 @@ def token_roundtrip(tamper, expire, path):
     config = get_config(get_server_dir())
     key = config["manabi"]["key"]
     ttl = None
-    path = "asdf.docx"
     check = True
     if expire:
         ttl = 1
@@ -34,14 +33,19 @@ def token_roundtrip(tamper, expire, path):
 
 @pytest.mark.parametrize("tamper", (True, False))
 @pytest.mark.parametrize("expire", (True, False))
-@pytest.mark.parametrize("path", (True, False))
+@pytest.mark.parametrize("path", ("hello", "asdf.docx"))
 def test_token_roundtrip(tamper, expire, path):
     token_roundtrip(tamper, expire, path)
 
 
 @given(binary(min_size=1, max_size=32))
-def test_token_roundtrip_hyp(string):
-    token_roundtrip(False, False, "huhu")
+def test_branca_roundtrip(path):
+    string = b"huhu"
+    config = get_config(get_server_dir())
+    key = config["manabi"]["key"]
+    f = Branca(fromstring(key))
+    res = f.decode(f.encode(string))
+    assert res == string
 
 
 def other_impl_decode(string):
