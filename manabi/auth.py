@@ -66,19 +66,30 @@ class ManabiAuthenticator(BaseMiddleware):
             environ[var] = environ[var].replace(repl, "")
 
     def __call__(self, environ, start_response):
-        print("hello middleware")
         path_info = environ["PATH_INFO"]
         token, _, path = path_info.strip("/").partition("/")
+        cookie = None
+        if "HTTP_COOKIE" in environ:
+            cookie = SimpleCookie(environ["HTTP_COOKIE"])
         if not path:
             path = token.strip("/")
-            if "HTTP_COOKIE" in environ:
-                cookie = SimpleCookie(environ["HTTP_COOKIE"])
+            if cookie:
                 token = cookie.get(path)
+
         if not (token and path):
             return self.access_denied(start_response)
+
         t = Token(environ["wsgidav.config"])
-        if not t.check(token, path):
+
+        check = t.check(token, path)
+        if not check:
+            if cookie:
+                token = cookie.get(path)
+                check = t.check(token, path)
+
+        if not check:
             return self.access_denied(start_response)
+
         self.fix_environ(environ, token)
         info = CookieInfo(start_response, self.manabi_secure(), path, token)
         return self.next_app(environ, partial(set_cookie, info))
