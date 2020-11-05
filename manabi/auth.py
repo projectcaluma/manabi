@@ -99,6 +99,7 @@ class ManabiAuthenticator(BaseMiddleware):
             return self.access_denied(start_response)
 
         self.fix_environ(environ, token)
+        environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
         token = t.make(path)
         info = CookieInfo(
             start_response,

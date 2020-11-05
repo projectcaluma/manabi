@@ -37,7 +37,7 @@ def get_config(server_dir):
         "provider_mapping": {
             "/": str(server_dir),
         },
-        "verbose": 3,
+        "verbose": 5,
         "middleware_stack": [
             WsgiDavDebugFilter,
             ErrorPrinter,
@@ -68,7 +68,7 @@ def serve_document(config, environ, start_response):
 </head>
 
 <body>
-    <a href="/dav/{token}/{path}">asdf.docx</a>
+    <a href="ms-word:ofe|u|http:192.168.1.11:8080/dav/{token}/{path}">asdf.docx</a>
 </body>
 </html>
 """.strip().encode(
@@ -92,9 +92,7 @@ def get_server(config):
         dav_app = WsgiDAVApp(config)
 
         path_map = {
-            "/test": partial(
-                serve_document, config
-            ),  # TODO web-server for test with a office-software
+            "/test": partial(serve_document, config),
             "/dav": dav_app,
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)
