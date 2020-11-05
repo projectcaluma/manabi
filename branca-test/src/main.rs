@@ -10,7 +10,8 @@ fn main() {
     match args[1].as_ref() {
         "decode" => {
             let payload = branca::decode(&args[3], &key, 0).unwrap();
-            print!("{}", payload);
+            let out = base_x::encode(BASE62, &payload.as_bytes());
+            print!("{}", out);
         }
         _ => (),
     }

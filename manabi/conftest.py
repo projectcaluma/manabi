@@ -3,6 +3,7 @@ import shutil
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
+from subprocess import run
 from threading import Thread
 
 import pytest
@@ -97,3 +98,10 @@ def server(config):
     server.stop()
     thread.join()
     _server = None
+
+
+@pytest.fixture(scope="module")
+def cargo():
+    if shutil.which("cargo"):
+        with branca_impl():
+            run(["cargo", "run", "x", "y"])
