@@ -12,11 +12,21 @@ class Token:
     def make(self, path):
         return make_token(self.key, path)
 
-    def check(self, data, path):
-        return check_token(self.key, data, path, self.ttl_init)
+    def check_ttl(self, data, path=None, ttl=None):
+        try:
+            if path is None:
+                check_token(self.key, data, path, ttl)
+                return True
+            else:
+                return check_token(self.key, data, path, ttl)
+        except RuntimeError:
+            return False
 
-    def refresh_check(self, data, path):
-        return check_token(self.key, data, path, self.ttl_refresh)
+    def check(self, data, path=None):
+        return self.check_ttl(data, path, self.ttl_init)
+
+    def refresh_check(self, data, path=None):
+        return self.check_ttl(data, path, self.ttl_refresh)
 
 
 def make_token(key, path, now=None):
