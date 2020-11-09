@@ -56,7 +56,9 @@ def get_config(server_dir: Path):
     }
 
 
-def serve_document(config: dict, environ: Dict[str, Any], start_response: Callable):
+def serve_document(
+    config: Dict[str, Any], environ: Dict[str, Any], start_response: Callable
+):
     path = "asdf.docx"
     token = Token.from_config(config).make(path)
     body = f"""
@@ -88,7 +90,7 @@ def serve_document(config: dict, environ: Dict[str, Any], start_response: Callab
     return [body]
 
 
-def get_server(config):
+def get_server(config: Dict[str, Any]):
     global _server
     if not _server:
         dav_app = WsgiDAVApp(config)

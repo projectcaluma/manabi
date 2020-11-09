@@ -3,6 +3,7 @@ from functools import partial
 from pathlib import Path
 from subprocess import run
 from threading import Thread
+from typing import Any, Dict, Generator
 
 import pytest  # type: ignore
 
@@ -15,12 +16,12 @@ def server_dir() -> Path:
 
 
 @pytest.fixture()
-def config(server_dir) -> dict:
+def config(server_dir) -> Dict[str, Any]:
     return mock.get_config(server_dir)
 
 
 @pytest.fixture()
-def server(config: dict):
+def server(config: Dict[str, Any]) -> Generator:
     server = mock.get_server(config)
     thread = Thread(target=partial(server.serve))
     thread.start()

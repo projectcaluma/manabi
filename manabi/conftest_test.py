@@ -1,12 +1,12 @@
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import requests
 
 from .token import Token
 
 
-def make_req(config: dict, override_path: Optional[str] = None) -> str:
+def make_req(config: Dict[str, Any], override_path: Optional[str] = None) -> str:
     t = Token.from_config(config)
     path = "asdf.docx"
     token = t.make(path)
@@ -15,12 +15,12 @@ def make_req(config: dict, override_path: Optional[str] = None) -> str:
     return f"http://localhost:8080/dav/{token}/{path}"
 
 
-def test_server_failure(server, config: dict):
+def test_server_failure(server, config: Dict[str, Any]):
     res = requests.get(make_req(config, "blabla.pdf"))
     assert res.status_code == 403
 
 
-def test_server_file(config, server: dict, server_dir: Path):
+def test_server_file(config: Dict[str, Any], server, server_dir: Path):
     with open(Path(server_dir, "asdf.docx"), "rb") as f:
         exp = f.read()
         res = requests.get(make_req(config))

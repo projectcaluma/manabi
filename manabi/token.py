@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from attr import dataclass
 from branca import Branca  # type: ignore
@@ -13,7 +13,7 @@ class Token:
     ttl_refresh: int
 
     @classmethod
-    def from_config(cls, config: dict):
+    def from_config(cls, config: Dict[str, Any]):
         return cls(
             config["manabi"]["key"],
             config["manabi"]["ttl_init"],
