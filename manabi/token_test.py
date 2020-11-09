@@ -1,21 +1,21 @@
 import shutil
 from subprocess import PIPE, run
 
-import pytest
-from branca import Branca
-from hypothesis import assume, given
-from hypothesis.strategies import binary, booleans, text
+import pytest  # type: ignore
+from branca import Branca  # type: ignore
+from hypothesis import assume, given  # type: ignore
+from hypothesis.strategies import binary, booleans, text  # type: ignore
 
 from . import mock
 from .token import check_token, make_token
 from .util import fromstring
 
 
-def get_config():
+def get_config() -> dict:
     return mock.get_config(mock.get_server_dir())
 
 
-def token_roundtrip(tamper, expire, path):
+def token_roundtrip(tamper: bool, expire: bool, path: str):
     config = get_config()
     key = config["manabi"]["key"]
     ttl = None
@@ -39,17 +39,17 @@ def token_roundtrip(tamper, expire, path):
 @pytest.mark.parametrize("tamper", (True, False))
 @pytest.mark.parametrize("expire", (True, False))
 @pytest.mark.parametrize("path", ("hello", "asdf.docx"))
-def test_token_roundtrip(tamper, expire, path):
+def test_token_roundtrip(tamper: bool, expire: bool, path: str):
     token_roundtrip(tamper, expire, path)
 
 
 @given(booleans(), booleans(), text(min_size=1, max_size=32))
-def test_token_roundtrip_hyp(tamper, expire, path):
+def test_token_roundtrip_hyp(tamper: bool, expire: bool, path: str):
     token_roundtrip(tamper, expire, path)
 
 
 @given(binary(min_size=1, max_size=32))
-def test_branca_roundtrip(string):
+def test_branca_roundtrip(string: bytes):
     config = get_config()
     key = config["manabi"]["key"]
     f = Branca(fromstring(key))
@@ -57,7 +57,7 @@ def test_branca_roundtrip(string):
     assert res == string
 
 
-def other_impl_decode(string):
+def other_impl_decode(string: bytes):
     with mock.branca_impl():
         config = get_config()
         key = config["manabi"]["key"]
@@ -77,7 +77,7 @@ def test_other_impl_decode(cargo):
 # hypothesis doesn't like fixtures anymore
 @pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")
 @given(text(min_size=1))
-def test_other_impl_decode_hyp(cargo, string):
-    string = string.encode("UTF-8")
-    assume(not string.startswith(b"\x00"))
-    other_impl_decode(string)
+def test_other_impl_decode_hyp(cargo, string: str):
+    bstr = string.encode("UTF-8")
+    assume(not bstr.startswith(b"\x00"))
+    other_impl_decode(bstr)

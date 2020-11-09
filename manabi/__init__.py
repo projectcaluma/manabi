@@ -1,4 +1,4 @@
-from wsgidav import http_authenticator
+from wsgidav import http_authenticator  # type: ignore
 
 from .auth import ManabiAuthenticator
 
@@ -6,15 +6,15 @@ from .auth import ManabiAuthenticator
 http_authenticator.HTTPAuthenticator = ManabiAuthenticator
 
 
-def keygen():
+def keygen() -> None:
     from .util import tostring
 
     with open("/dev/random", "rb") as f:
         print(tostring(f.read(32)))
 
 
-def setup_log():
-    from wsgidav.util import init_logging
+def setup_log() -> None:
+    from wsgidav.util import init_logging  # type: ignore
 
     from .mock import get_config, get_server_dir
 

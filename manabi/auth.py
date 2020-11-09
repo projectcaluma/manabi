@@ -1,20 +1,25 @@
 import calendar
-from collections import namedtuple
 from datetime import datetime
 from functools import partial
 from http.cookies import SimpleCookie
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any, Callable, Dict, List, Tuple, cast
 from unittest.mock import MagicMock
 
+from attr import dataclass
 from wsgidav.middleware import BaseMiddleware  # type: ignore
 
 from .token import Token
 from .util import get_rfc1123_time
 
-# TODO replace with attrs
-CookieInfo = namedtuple(
-    "CookieInfo", ("start_response", "secure", "path", "token", "ttl")
-)
+
+@dataclass
+class CookieInfo:
+    start_response: Callable
+    secure: bool
+    path: str
+    token: str
+    ttl: int
+
 
 _error_message_403 = """
 <html>
@@ -59,7 +64,7 @@ class ManabiAuthenticator(BaseMiddleware):
             return True
         return manabi["secure"]
 
-    def access_denied(self, start_response) -> List[bytes]:
+    def access_denied(self, start_response: Callable) -> List[bytes]:
         body = _error_message_403
         start_response(
             "403 Forbidden",
@@ -71,13 +76,15 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def fix_environ(self, environ: Dict[str, str], token: str, path: str) -> None:
+    def fix_environ(self, environ: Dict[str, Any], token: str, path: str) -> None:
         environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
         repl = f"/{token}"
         for var in ("REQUEST_URI", "PATH_INFO"):
             environ[var] = environ[var].replace(repl, "")
 
-    def __call__(self, environ: Dict[str, str], start_response) -> List[bytes]:
+    def __call__(
+        self, environ: Dict[str, Any], start_response: Callable
+    ) -> List[bytes]:
         path_info = environ["PATH_INFO"]
         token, _, path = path_info.strip("/").partition("/")
 
@@ -104,6 +111,6 @@ class ManabiAuthenticator(BaseMiddleware):
                 self.manabi_secure(),
                 path,
                 token,
-                config["manabi"]["ttl_refresh"],
+                int(config["manabi"]["ttl_refresh"]),
             )
             return self.next_app(environ, partial(set_cookie, info))

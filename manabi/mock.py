@@ -3,13 +3,14 @@ import shutil
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
+from typing import Any, Callable, Dict
 
-from cheroot import wsgi
-from wsgidav.debug_filter import WsgiDavDebugFilter
-from wsgidav.dir_browser import WsgiDavDirBrowser
-from wsgidav.error_printer import ErrorPrinter
-from wsgidav.request_resolver import RequestResolver
-from wsgidav.wsgidav_app import WsgiDAVApp
+from cheroot import wsgi  # type: ignore
+from wsgidav.debug_filter import WsgiDavDebugFilter  # type: ignore
+from wsgidav.dir_browser import WsgiDavDirBrowser  # type: ignore
+from wsgidav.error_printer import ErrorPrinter  # type: ignore
+from wsgidav.request_resolver import RequestResolver  # type: ignore
+from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
 from .token import Token
@@ -29,7 +30,7 @@ def get_server_dir():
     return _server_dir
 
 
-def get_config(server_dir):
+def get_config(server_dir: Path):
     return {
         "host": "0.0.0.0",
         "port": 8080,
@@ -54,7 +55,7 @@ def get_config(server_dir):
     }
 
 
-def serve_document(config, environ, start_response):
+def serve_document(config: dict, environ: Dict[str, Any], start_response: Callable):
     path = "asdf.docx"
     token = Token(config).make(path)
     body = f"""

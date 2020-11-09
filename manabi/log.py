@@ -1,4 +1,4 @@
-from wsgidav.util import init_logging
+from wsgidav.util import init_logging  # type: ignore
 
 from .mock import get_config, get_server_dir
 
