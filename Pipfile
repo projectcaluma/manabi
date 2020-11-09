@@ -9,3 +9,6 @@ manabi = {editable = true, path = "."}
 [dev-packages]
 manabi = {editable = true, extras = ["dev"], path = "."}
 pip = "*"
+
+[requires]
+python_version = "3.7"

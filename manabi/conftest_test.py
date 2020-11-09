@@ -6,7 +6,7 @@ import requests
 from .token import Token
 
 
-def make_req(config: dict, override_path: Optional[str] = None):
+def make_req(config: dict, override_path: Optional[str] = None) -> str:
     t = Token.from_config(config)
     path = "asdf.docx"
     token = t.make(path)
