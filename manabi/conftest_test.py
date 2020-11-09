@@ -7,7 +7,7 @@ from .token import Token
 
 
 def make_req(config: dict, override_path: Optional[str] = None):
-    t = Token(config)
+    t = Token.from_config(config)
     path = "asdf.docx"
     token = t.make(path)
     if override_path:

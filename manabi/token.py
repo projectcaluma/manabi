@@ -1,15 +1,24 @@
 from typing import Optional
 
+from attr import dataclass
 from branca import Branca  # type: ignore
 
 from .util import fromstring
 
 
+@dataclass
 class Token:
-    def __init__(self, config):
-        self.key = config["manabi"]["key"]
-        self.ttl_init = config["manabi"]["ttl_init"]
-        self.ttl_refresh = config["manabi"]["ttl_refresh"]
+    key: str
+    ttl_init: int
+    ttl_refresh: int
+
+    @classmethod
+    def from_config(cls, config: dict):
+        return cls(
+            config["manabi"]["key"],
+            config["manabi"]["ttl_init"],
+            config["manabi"]["ttl_refresh"],
+        )
 
     def make(self, path: str) -> str:
         return make_token(self.key, path)

@@ -96,7 +96,7 @@ class ManabiAuthenticator(BaseMiddleware):
             return self.access_denied(start_response)
         else:
             config = environ["wsgidav.config"]
-            t = Token(config)
+            t = Token.from_config(config)
             # A file-access
             check_path = t.check(token)
             if check_path != path and cookie:

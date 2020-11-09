@@ -57,7 +57,7 @@ def get_config(server_dir: Path):
 
 def serve_document(config: dict, environ: Dict[str, Any], start_response: Callable):
     path = "asdf.docx"
-    token = Token(config).make(path)
+    token = Token.from_config(config).make(path)
     body = f"""
 <!doctype html>
 
