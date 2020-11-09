@@ -1,18 +1,16 @@
 from email.utils import formatdate
-from hashlib import shake_128
 
-import base62
+import base62  # type: ignore
 
 
-def get_rfc1123_time(secs=None):
+def get_rfc1123_time(secs: float = None) -> str:
     """Return <secs> in rfc 1123 date/time format (pass secs=None for current date)."""
-    # GC issue #20: time string must be locale independent
     return formatdate(timeval=secs, localtime=False, usegmt=True)
 
 
-def tostring(data):
+def tostring(data: bytes) -> str:
     return base62.encodebytes(data)
 
 
-def fromstring(data):
+def fromstring(data: str) -> bytes:
     return base62.decodebytes(data)

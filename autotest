@@ -1,0 +1,12 @@
+#!/bin/sh
+
+run_test() {
+    mypy manabi || return
+    flake8 manabi || return
+    pytest manabi || return
+}
+
+run_test
+while inotifywait -q -r -e create,modify,delete manabi; do
+    run_test
+done

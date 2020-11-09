@@ -3,13 +3,15 @@ from collections import namedtuple
 from datetime import datetime
 from functools import partial
 from http.cookies import SimpleCookie
+from typing import Any, Dict, List, Tuple, cast
 from unittest.mock import MagicMock
 
-from wsgidav.middleware import BaseMiddleware
+from wsgidav.middleware import BaseMiddleware  # type: ignore
 
 from .token import Token
 from .util import get_rfc1123_time
 
+# TODO replace with attrs
 CookieInfo = namedtuple(
     "CookieInfo", ("start_response", "secure", "path", "token", "ttl")
 )
@@ -26,9 +28,11 @@ _error_message_403 = """
 )
 
 
-def set_cookie(info, status, headers, exc_info=None):
+def set_cookie(
+    info: CookieInfo, status: int, headers: List[Tuple[str, str]], exc_info=None
+) -> None:
     path = info.path
-    cookie = SimpleCookie()
+    cookie: SimpleCookie = SimpleCookie()
     cookie[path] = info.token
     date = datetime.utcnow()
     unixtime = calendar.timegm(date.utctimetuple())
@@ -37,15 +41,16 @@ def set_cookie(info, status, headers, exc_info=None):
     if info.secure:
         cookie[path]["secure"] = True
         cookie[path]["httponly"] = True
-    headers.append(str(cookie).split(": "))
-    return info.start_response(status, headers, exc_info)
+    entry = cast(Tuple[str, str], str(cookie).split(": "))
+    headers.append(entry)
+    info.start_response(status, headers, exc_info)
 
 
 class ManabiAuthenticator(BaseMiddleware):
-    def get_domain_controller(self):
+    def get_domain_controller(self) -> Any:
         return MagicMock()
 
-    def manabi_secure(self):
+    def manabi_secure(self) -> bool:
         config = self.config
         if "manabi" not in config:
             return True
@@ -54,7 +59,7 @@ class ManabiAuthenticator(BaseMiddleware):
             return True
         return manabi["secure"]
 
-    def access_denied(self, start_response):
+    def access_denied(self, start_response) -> List[bytes]:
         body = _error_message_403
         start_response(
             "403 Forbidden",
@@ -66,13 +71,13 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def fix_environ(self, environ, token, path):
+    def fix_environ(self, environ: Dict[str, str], token: str, path: str) -> None:
         environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
         repl = f"/{token}"
         for var in ("REQUEST_URI", "PATH_INFO"):
             environ[var] = environ[var].replace(repl, "")
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ: Dict[str, str], start_response) -> List[bytes]:
         path_info = environ["PATH_INFO"]
         token, _, path = path_info.strip("/").partition("/")
 
