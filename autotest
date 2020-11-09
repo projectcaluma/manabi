@@ -4,6 +4,7 @@ run_test() {
     dmypy run -- manabi || return
     flake8 manabi || return
     pytest manabi || return
+    ag TODO manabi
 }
 
 run_test
