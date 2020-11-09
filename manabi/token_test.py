@@ -25,7 +25,10 @@ def token_roundtrip(tamper, expire, path):
     else:
         data = make_token(key, path)
     if tamper:
-        data = data[0:3] + "f" + data[4:]
+        if data[3] == "f":
+            data = data[0:3] + "g" + data[4:]
+        else:
+            data = data[0:3] + "f" + data[4:]
     if tamper or expire:
         with pytest.raises(RuntimeError):
             check_token(key, data, ttl)
@@ -40,18 +43,18 @@ def test_token_roundtrip(tamper, expire, path):
     token_roundtrip(tamper, expire, path)
 
 
-# @given(booleans(), booleans(), text(min_size=1, max_size=32))
-# def test_token_roundtrip_hyp(tamper, expire, path):
-#     token_roundtrip(tamper, expire, path)
-#
-#
-# @given(binary(min_size=1, max_size=32))
-# def test_branca_roundtrip(string):
-#     config = get_config()
-#     key = config["manabi"]["key"]
-#     f = Branca(fromstring(key))
-#     res = f.decode(f.encode(string))
-#     assert res == string
+@given(booleans(), booleans(), text(min_size=1, max_size=32))
+def test_token_roundtrip_hyp(tamper, expire, path):
+    token_roundtrip(tamper, expire, path)
+
+
+@given(binary(min_size=1, max_size=32))
+def test_branca_roundtrip(string):
+    config = get_config()
+    key = config["manabi"]["key"]
+    f = Branca(fromstring(key))
+    res = f.decode(f.encode(string))
+    assert res == string
 
 
 def other_impl_decode(string):
