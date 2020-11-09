@@ -16,9 +16,3 @@ def tostring(data):
 
 def fromstring(data):
     return base62.decodebytes(data)
-
-
-def short_hash(data):
-    h = shake_128()
-    h.update(data)
-    return h.digest(16)

@@ -68,7 +68,7 @@ def serve_document(config, environ, start_response):
 </head>
 
 <body>
-    <a href="ms-word:ofe|u|http:192.168.1.11:8080/dav/{token}/{path}">asdf.docx</a>
+    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{token}/{path}">asdf.docx</a>
 </body>
 </html>
 """.strip().encode(

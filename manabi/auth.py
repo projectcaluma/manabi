@@ -79,27 +79,18 @@ class ManabiAuthenticator(BaseMiddleware):
         cookie = None
         if "HTTP_COOKIE" in environ:
             cookie = SimpleCookie(environ["HTTP_COOKIE"])
-        config = environ["wsgidav.config"]
-        t = Token(config)
 
         if not path:
-            # A directory-listing
-            check = t.check(token)
-            if not check and cookie:
-                check = t.refresh_check(token)
-
-            if not check:
-                return self.access_denied(start_response)
-            self.fix_environ(environ, token, path)
-            # Directory-listing does not refresh the token
-            return self.next_app(environ, start_response)
+            return self.access_denied(start_response)
         else:
+            config = environ["wsgidav.config"]
+            t = Token(config)
             # A file-access
-            check = t.check(token, path)
-            if not check and cookie:
-                check = t.refresh_check(token, path)
+            check_path = t.check(token)
+            if check_path != path and cookie:
+                check_path = t.refresh_check(token)
 
-            if not check:
+            if check_path != path:
                 return self.access_denied(start_response)
             self.fix_environ(environ, token, path)
             token = t.make(path)

@@ -3,7 +3,6 @@ from pathlib import Path
 import requests
 
 from .token import Token
-from .util import short_hash, tostring
 
 
 def make_req(config, override_path=None):
@@ -13,11 +12,6 @@ def make_req(config, override_path=None):
     if override_path:
         path = override_path
     return f"http://localhost:8080/dav/{token}/{path}"
-
-
-def test_server_hash(server, config):
-    res = requests.get(make_req(config))
-    assert "3n843L6rn6Gi6gcpjcOBD2" == tostring(short_hash(res.content))
 
 
 def test_server_failure(server, config):
