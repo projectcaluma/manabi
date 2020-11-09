@@ -3,7 +3,7 @@ import shutil
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from cheroot import wsgi  # type: ignore
 from wsgidav.debug_filter import WsgiDavDebugFilter  # type: ignore
@@ -13,10 +13,11 @@ from wsgidav.request_resolver import RequestResolver  # type: ignore
 from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
+from .filesystem import ManabiProvider
 from .token import Token
 from .util import get_rfc1123_time
 
-_server = None
+_server: Optional[wsgi.Server] = None
 _server_dir = Path("/tmp/296fe33fcca")
 _module_dir = Path(__file__).parent
 _test_file = Path(_module_dir, "data", "asdf.docx")
@@ -36,7 +37,7 @@ def get_config(server_dir: Path):
         "port": 8080,
         "mount_path": "/dav",
         "provider_mapping": {
-            "/": str(server_dir),
+            "/": ManabiProvider(server_dir),
         },
         "verbose": 5,
         "middleware_stack": [

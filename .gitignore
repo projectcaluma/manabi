@@ -5,3 +5,4 @@ __pycache__
 *.pyc
 /.hypothesis/
 /branca-test/target/
+/.dmypy.json
