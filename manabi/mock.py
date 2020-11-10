@@ -60,7 +60,7 @@ def serve_document(
     config: Dict[str, Any], environ: Dict[str, Any], start_response: Callable
 ):
     path = "asdf.docx"
-    token = Token.from_config(config).make(path)
+    ti = Token.from_config(config).make(path)
     body = f"""
 <!doctype html>
 
@@ -72,7 +72,7 @@ def serve_document(
 </head>
 
 <body>
-    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{token}/{path}">asdf.docx</a>
+    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{ti.as_url()}</a>
 </body>
 </html>
 """.strip().encode(

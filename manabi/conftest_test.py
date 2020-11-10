@@ -9,15 +9,15 @@ from .token import Token
 def make_req(config: Dict[str, Any], override_path: Optional[str] = None) -> str:
     t = Token.from_config(config)
     path = "asdf.docx"
-    token = t.make(path)
     if override_path:
         path = override_path
-    return f"http://localhost:8080/dav/{token}/{path}"
+    ti = t.make(path)
+    return f"http://localhost:8080/dav/{ti.as_url()}"
 
 
 def test_server_failure(server, config: Dict[str, Any]):
     res = requests.get(make_req(config, "blabla.pdf"))
-    assert res.status_code == 403
+    assert res.status_code == 404
 
 
 def test_server_file(config: Dict[str, Any], server, server_dir: Path):

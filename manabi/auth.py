@@ -76,11 +76,12 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def fix_environ(
+    def update_environ(
         self, environ: Dict[str, Any], path: str, token_old: str, token: str
     ) -> None:
+        environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
+        environ["manabi.path"] = f"/{path}"
         if token_old != token:
-            environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
             for var in ("REQUEST_URI", "PATH_INFO"):
                 environ[var] = environ[var].replace(token_old, token)
 
@@ -103,13 +104,13 @@ class ManabiAuthenticator(BaseMiddleware):
 
         if not path:
             return self.access_denied(start_response)
-        self.fix_environ(environ, path, token_old, token)
-        token = t.make(path)
+        self.update_environ(environ, path, token_old, token)
+        ti = t.make(path)
         info = CookieInfo(
             start_response,
             self.manabi_secure(),
             path,
-            token,
+            ti.token,
             int(config["manabi"]["ttl_refresh"]),
         )
         return self.next_app(environ, partial(set_cookie, info))

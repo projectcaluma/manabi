@@ -1,9 +1,20 @@
+import os
 from typing import Any, Dict, Optional
 
 from attr import dataclass
 from branca import Branca  # type: ignore
 
 from .util import fromstring
+
+
+@dataclass
+class TokenInfo:
+    token: str
+    path: str
+
+    def as_url(self):
+        path = self.path.split(os.pathsep)[-1]
+        return f"{self.token}/{path}"
 
 
 @dataclass
@@ -21,7 +32,7 @@ class Token:
         )
 
     def make(self, path: str) -> str:
-        return make_token(self.key, path)
+        return TokenInfo(make_token(self.key, path), path)
 
     def check_ttl(self, data: str, ttl: Optional[int] = None) -> Optional[str]:
         try:
