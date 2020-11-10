@@ -1,6 +1,13 @@
 Manabi
 ======
 
+TODO
+----
+
+* Slowly change API to the idea in the `ideas` branch
+  * Switch to setting.py
+  * fixture to override settting.py
+
 Install
 -------
 
@@ -17,8 +24,8 @@ Config
 Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
 shared between the caluma/alexandria backend and the WebDAV server.
 
-TODO
-----
+Longterm TODO
+-------------
 
 Change Dict[...] to dict[...] once mypy supports that. Python 3.7 already
 supports it using `from __future__ import annotations`. The same is true for any
