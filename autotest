@@ -1,13 +1,9 @@
 #!/bin/sh
 
-run_test() {
-    dmypy run -- manabi || return
-    flake8 manabi || return
-    pytest manabi || return
+find . -name "*.py" | sh -c "
+    set -e
+    dmypy run -- manabi
+    flake8 manabi
+    pytest manabi
     ag TODO manabi
-}
-
-run_test
-while inotifywait -q -r -e create,modify,delete manabi; do
-    run_test
-done
+"
