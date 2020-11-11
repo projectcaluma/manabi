@@ -1,0 +1,2 @@
+export LD_LIBRARY_PATH=$(nix eval --raw nixpkgs.libsodium)/lib:$LD_LIBRARY_PATH
+pipenv shell
