@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from .token2 import TTL, Config, Key, Token
+from .token2 import TTL, Config, Key, State, Token
 
 _key = b"\xef\xc5\x07\xee}\x7f6\x11L\xb0\xc3155x\x11\xce.\x8e\xb96\xba\xce\x8b\x17-\xfc\x96]\xf8%\xd8"
 
@@ -39,5 +39,25 @@ def test_token_creation(config):
     token = Token(cfg, path)
     assert token.config.key.data == _key
     ct = token.encode()
-    token2 = Token.from_cipher_text(cfg, ct)
-    assert token2.path == path
+    token2 = Token.from_ciphertext(cfg, ct)
+    assert token2.check(path) == State.valid
+    assert token2.check("huh") == State.intact
+    assert token2.check(path, 10) == State.valid
+    assert token2.check("huh", 10) == State.intact
+    assert token2.check(path, -10) == State.expired
+    assert token2.check("huh", -10) == State.intact
+    assert token2.timestamp < token2.now() + 10
+    assert token2.timestamp > token2.now() - 10
+
+    if ct[3] == "f":
+        ct = ct[0:3] + "g" + ct[4:]
+    else:
+        ct = ct[0:3] + "f" + ct[4:]
+
+    token2 = Token.from_ciphertext(cfg, ct)
+    assert token2.check(path) == State.invalid
+    assert token2.check("huh") == State.invalid
+    assert token2.check(path, 10) == State.invalid
+    assert token2.check("huh", 10) == State.invalid
+    assert token2.check(path, -10) == State.invalid
+    assert token2.check("huh", -10) == State.invalid

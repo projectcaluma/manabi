@@ -1,8 +1,10 @@
+import calendar
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from attr import dataclass
+from attr import Factory, dataclass
 from branca import Branca  # type: ignore
 
 from .util import cattrib, from_string
@@ -42,30 +44,60 @@ class Config:
 class State(Enum):
     valid = 1
     expired = 2
-    invalid = 3
+    intact = 3
+    invalid = 4
 
 
 @dataclass
 class Token:
     config: Config = cattrib(Config)
-    path: Path = cattrib(Path)
-    ttl: Optional[TTL] = cattrib(TTL, default=None)
+    path: Path = cattrib(Path, default=None)
+    timestamp: int = cattrib(int, default=None)
+    _ciphertext: str = cattrib(str, default=None)
+    _branca: Branca = cattrib(Branca, default=None)
 
     def encode(self):
         return _encode(self.config.key.data, str(self.path))
 
     @classmethod
-    def from_cipher_text(cls, config: Config, ct: str):
-        return cls(config, Path(_decode(config.key.data, ct)))
+    def now(cls) -> int:
+        return calendar.timegm(datetime.utcnow().timetuple())
+
+    @classmethod
+    def from_ciphertext(cls, config: Config, ciphertext: str):
+        branca = Branca(config.key.data)
+        timestamp = branca.timestamp(ciphertext)
+        try:
+            token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
+        except RuntimeError:
+            return cls(config, None, timestamp)
+        return cls(config, token_path, timestamp, ciphertext, branca)
+
+    def check(self, path: Path, ttl: Optional[int] = None) -> State:
+        if self.path is None:
+            return State.invalid
+        if self.path != path:
+            return State.intact
+        if ttl is not None:
+            future = self.timestamp + ttl
+            if self.now() > future:
+                return State.expired
+        return State.valid
+
+    def refresh(self, path: Path) -> State:
+        return self.check(path, self.config.ttl.refresh)
+
+    def initial(self, path: Path) -> State:
+        return self.check(path, self.config.ttl.initial)
 
 
 def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:
     f = Branca(key)
     p = path.encode("UTF-8")
-    ct = f.encode(p, now)
-    return ct
+    ciphertext = f.encode(p, now)
+    return ciphertext
 
 
-def _decode(key: bytes, data: str, ttl=None) -> str:
+def _decode(key: bytes, ciphertext: str, ttl=None) -> str:
     f = Branca(key)
-    return f.decode(data, ttl).decode("UTF-8")
+    return f.decode(ciphertext, ttl).decode("UTF-8")
