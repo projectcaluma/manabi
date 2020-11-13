@@ -46,10 +46,10 @@ class Config:
 
 
 class State(Enum):
-    valid = 1
-    expired = 2
-    intact = 3
-    invalid = 4
+    valid = 1, "the token is intact, path is valid and ttl ok"
+    expired = 2, "the token is intact, path valid but the ttl is expired"
+    intact = 3, "the token is intact, but the path is not valid"
+    invalid = 4, "the token is not valid, authentication failed"
 
 
 @dataclass
