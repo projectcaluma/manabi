@@ -50,8 +50,8 @@ def get_config(server_dir: Path):
         "enable_loggers": ["lock_manager", "request_resolver"],
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
-            "ttl_refresh": 600,
-            "ttl_init": 600,
+            "refresh": 600,
+            "initial": 600,
         },
     }
 
