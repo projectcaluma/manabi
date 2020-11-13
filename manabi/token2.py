@@ -10,6 +10,10 @@ from branca import Branca  # type: ignore
 from .util import cattrib, from_string
 
 
+def now() -> int:
+    return calendar.timegm(datetime.utcnow().timetuple())
+
+
 @dataclass
 class TTL:
     initial: int = cattrib(int)
@@ -51,27 +55,28 @@ class State(Enum):
 @dataclass
 class Token:
     config: Config = cattrib(Config)
-    path: Path = cattrib(Path, default=None)
-    timestamp: int = cattrib(int, default=None)
+    path: Optional[Path] = cattrib(Path, default=None)
+    timestamp: int = cattrib(int, default=Factory(now))
     _ciphertext: str = cattrib(str, default=None)
-    _branca: Branca = cattrib(Branca, default=None)
 
     def encode(self):
-        return _encode(self.config.key.data, str(self.path))
-
-    @classmethod
-    def now(cls) -> int:
-        return calendar.timegm(datetime.utcnow().timetuple())
+        if self.path is None:
+            raise ValueError("path may not be None")
+        if self.timestamp is None:
+            self.timestamp = self.now()
+        self._ciphertext = _encode(self.config.key.data, str(self.path), self.timestamp)
+        return self._ciphertext
 
     @classmethod
     def from_ciphertext(cls, config: Config, ciphertext: str):
+        assert ciphertext
         branca = Branca(config.key.data)
         timestamp = branca.timestamp(ciphertext)
         try:
             token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
         except RuntimeError:
             return cls(config, None, timestamp)
-        return cls(config, token_path, timestamp, ciphertext, branca)
+        return cls(config, token_path, timestamp, ciphertext)
 
     def check(self, path: Path, ttl: Optional[int] = None) -> State:
         if self.path is None:
@@ -80,7 +85,7 @@ class Token:
             return State.intact
         if ttl is not None:
             future = self.timestamp + ttl
-            if self.now() > future:
+            if now() > future:
                 return State.expired
         return State.valid
 

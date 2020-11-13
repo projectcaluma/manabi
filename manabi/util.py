@@ -19,6 +19,7 @@ def cattrib(attrib_type, check=None, **kwargs):
             if check and not check(value):
                 source = getsource(check).strip()
                 raise ValueError(f"check failed: {source}")
+        return value
 
     return attrib(validator=handler, on_setattr=handler, **kwargs)
 
