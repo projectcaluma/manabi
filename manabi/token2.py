@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 from attr import dataclass
 from branca import Branca  # type: ignore
 
-from .util import cattrib, fromstring
+from .util import cattrib, from_string
 
 
 @dataclass
@@ -26,7 +26,7 @@ class Key:
 
     @classmethod
     def from_config(cls, config: dict):
-        return cls(fromstring(config["manabi"]["key"]))
+        return cls(from_string(config["manabi"]["key"]))
 
 
 @dataclass
@@ -52,16 +52,20 @@ class Token:
     ttl: Optional[TTL] = cattrib(TTL, default=None)
 
     def encode(self):
-        pass
+        return _encode(self.config.key.data, str(self.path))
+
+    @classmethod
+    def from_cipher_text(cls, config: Config, ct: str):
+        return cls(config, Path(_decode(config.key.data, ct)))
 
 
-def _make_token(key: bytes, path: str, now: Optional[int] = None) -> str:
+def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:
     f = Branca(key)
     p = path.encode("UTF-8")
     ct = f.encode(p, now)
     return ct
 
 
-def _check_token(key: bytes, data: str, ttl=None) -> str:
+def _decode(key: bytes, data: str, ttl=None) -> str:
     f = Branca(key)
     return f.decode(data, ttl).decode("UTF-8")

@@ -8,7 +8,7 @@ from hypothesis.strategies import binary, booleans, text  # type: ignore
 
 from . import mock
 from .token import check_token, make_token
-from .util import fromstring
+from .util import from_string
 
 
 def get_config() -> dict:
@@ -52,7 +52,7 @@ def test_token_roundtrip_hyp(tamper: bool, expire: bool, path: str):
 def test_branca_roundtrip(string: bytes):
     config = get_config()
     key = config["manabi"]["key"]
-    f = Branca(fromstring(key))
+    f = Branca(from_string(key))
     res = f.decode(f.encode(string))
     assert res == string
 
@@ -61,10 +61,10 @@ def other_impl_decode(string: bytes):
     with mock.branca_impl():
         config = get_config()
         key = config["manabi"]["key"]
-        f = Branca(fromstring(key))
+        f = Branca(from_string(key))
         ct = f.encode(string)
         proc = run(["cargo", "run", "decode", key, ct], stdout=PIPE, check=True)
-        assert fromstring(proc.stdout.decode("UTF-8")) == string
+        assert from_string(proc.stdout.decode("UTF-8")) == string
 
 
 @pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")

@@ -37,3 +37,7 @@ def test_token_creation(config):
     cfg = Config.from_config(config)
     path = Path("asdf.docx")
     token = Token(cfg, path)
+    assert token.config.key.data == _key
+    ct = token.encode()
+    token2 = Token.from_cipher_text(cfg, ct)
+    assert token2.path == path

@@ -7,10 +7,10 @@ http_authenticator.HTTPAuthenticator = ManabiAuthenticator
 
 
 def keygen() -> None:
-    from .util import tostring
+    from .util import to_string
 
     with open("/dev/random", "rb") as f:
-        print(tostring(f.read(32)))
+        print(to_string(f.read(32)))
 
 
 def setup_log() -> None:

@@ -28,9 +28,9 @@ def get_rfc1123_time(secs: float = None) -> str:
     return formatdate(timeval=secs, localtime=False, usegmt=True)
 
 
-def tostring(data: bytes) -> str:
+def to_string(data: bytes) -> str:
     return base62.encodebytes(data)
 
 
-def fromstring(data: str) -> bytes:
+def from_string(data: str) -> bytes:
     return base62.decodebytes(data)

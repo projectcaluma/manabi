@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from attr import dataclass
 from branca import Branca  # type: ignore
 
-from .util import fromstring
+from .util import from_string
 
 
 @dataclass
@@ -48,12 +48,12 @@ class Token:
 
 
 def make_token(key: str, path: str, now: Optional[int] = None) -> str:
-    f = Branca(fromstring(key))
+    f = Branca(from_string(key))
     p = path.encode("UTF-8")
     ct = f.encode(p, now)
     return ct
 
 
 def check_token(key: str, data: str, ttl=None) -> str:
-    f = Branca(fromstring(key))
+    f = Branca(from_string(key))
     return f.decode(data, ttl).decode("UTF-8")
