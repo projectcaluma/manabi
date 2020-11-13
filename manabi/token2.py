@@ -2,7 +2,7 @@ import calendar
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from attr import Factory, dataclass
 from branca import Branca  # type: ignore
@@ -20,7 +20,7 @@ class TTL:
     refresh: int = cattrib(int)
 
     @classmethod
-    def from_config(cls, config: dict):
+    def from_config(cls, config: dict) -> "TTL":
         initial = config["manabi"]["initial"]
         refresh = config["manabi"]["refresh"]
         return cls(initial, refresh)
@@ -31,7 +31,7 @@ class Key:
     data: bytes = cattrib(bytes, lambda x: len(x) == 32)
 
     @classmethod
-    def from_config(cls, config: dict):
+    def from_config(cls, config: dict) -> "Key":
         return cls(from_string(config["manabi"]["key"]))
 
 
@@ -41,7 +41,7 @@ class Config:
     ttl: TTL = cattrib(TTL)
 
     @classmethod
-    def from_config(cls, config: dict):
+    def from_config(cls, config: dict) -> "Config":
         return cls(Key.from_config(config), TTL.from_config(config))
 
 
@@ -68,7 +68,14 @@ class Token:
         return self._ciphertext
 
     @classmethod
-    def from_ciphertext(cls, config: Config, ciphertext: str):
+    def from_token(cls, token: "Token", timestamp: int = None) -> "Token":
+        if timestamp is None:
+            return cls(token.config, token.path, now())
+        else:
+            return cls(token.config, token.path, timestamp)
+
+    @classmethod
+    def from_ciphertext(cls, config: Config, ciphertext: str) -> "Token":
         assert ciphertext
         branca = Branca(config.key.data)
         timestamp = branca.timestamp(ciphertext)
