@@ -54,7 +54,7 @@ class State(Enum):
 
 @dataclass
 class Token:
-    config: Config = cattrib(Config)
+    key: Key = cattrib(Key)
     path: Optional[Path] = cattrib(Path, default=None)
     timestamp: int = cattrib(int, default=Factory(now))
     _ciphertext: str = cattrib(str, default=None)
@@ -64,26 +64,26 @@ class Token:
             raise ValueError("path may not be None")
         if self.timestamp is None:
             self.timestamp = self.now()
-        self._ciphertext = _encode(self.config.key.data, str(self.path), self.timestamp)
+        self._ciphertext = _encode(self.key.data, str(self.path), self.timestamp)
         return self._ciphertext
 
     @classmethod
     def from_token(cls, token: "Token", timestamp: int = None) -> "Token":
         if timestamp is None:
-            return cls(token.config, token.path, now())
+            return cls(token.key, token.path, now())
         else:
-            return cls(token.config, token.path, timestamp)
+            return cls(token.key, token.path, timestamp)
 
     @classmethod
-    def from_ciphertext(cls, config: Config, ciphertext: str) -> "Token":
+    def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":
         assert ciphertext
-        branca = Branca(config.key.data)
+        branca = Branca(key.data)
         timestamp = branca.timestamp(ciphertext)
         try:
             token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
         except RuntimeError:
-            return cls(config, None, timestamp)
-        return cls(config, token_path, timestamp, ciphertext)
+            return cls(key, None, timestamp)
+        return cls(key, token_path, timestamp, ciphertext)
 
     def check(self, path: Path, ttl: Optional[int] = None) -> State:
         if self.path is None:
@@ -96,11 +96,11 @@ class Token:
                 return State.expired
         return State.valid
 
-    def refresh(self, path: Path) -> State:
-        return self.check(path, self.config.ttl.refresh)
+    def refresh(self, path: Path, ttl: TTL) -> State:
+        return self.check(path, ttl.refresh)
 
-    def initial(self, path: Path) -> State:
-        return self.check(path, self.config.ttl.initial)
+    def initial(self, path: Path, ttl: TTL) -> State:
+        return self.check(path, ttl.initial)
 
 
 def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:

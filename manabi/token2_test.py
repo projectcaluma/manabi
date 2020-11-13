@@ -36,8 +36,8 @@ def test_config_validator(config):
 def test_token_creation(config):
     cfg = Config.from_config(config)
     path = Path("asdf.docx")
-    token = Token(cfg, path)
-    assert token.config.key.data == _key
+    token = Token(cfg.key, path)
+    assert token.key.data == _key
     token.check(path) == State.valid
     token.check(path, 10) == State.valid
     token.check(path, -10) == State.expired
@@ -46,7 +46,7 @@ def test_token_creation(config):
     token.check(path, -10) == State.expired
     token.check(path) == State.valid
 
-    token2 = Token.from_ciphertext(cfg, ct)
+    token2 = Token.from_ciphertext(cfg.key, ct)
     assert token2.check(path) == State.valid
     assert token2.check("huh") == State.intact
     assert token2.check(path, 10) == State.valid
@@ -55,12 +55,14 @@ def test_token_creation(config):
     assert token2.check("huh", -10) == State.intact
     assert token2.timestamp < now() + 10
     assert token2.timestamp > now() - 10
+    assert token2.initial(path, cfg.ttl) == State.valid
+    assert token2.refresh(path, cfg.ttl) == State.valid
 
     # Testing refresh
     tokenN = Token.from_token(token2)
     ct2 = tokenN.encode()
     assert ct != ct2
-    token22 = Token.from_ciphertext(cfg, ct2)
+    token22 = Token.from_ciphertext(cfg.key, ct2)
     assert token22.check(path) == State.valid
     assert token22.check("huh") == State.intact
     assert token22.check(path, 10) == State.valid
@@ -70,7 +72,7 @@ def test_token_creation(config):
     assert token22.timestamp < now() + 10
     assert token22.timestamp > now() - 10
 
-    token3 = Token(cfg)
+    token3 = Token(cfg.key)
     assert token3.check(path) == State.invalid
     assert token3.check("huh") == State.invalid
     assert token3.check(path, 10) == State.invalid
@@ -80,7 +82,7 @@ def test_token_creation(config):
     assert token3.check(None) == State.invalid
 
     path = Path("")
-    token4 = Token(cfg, Path(""))
+    token4 = Token(cfg.key, Path(""))
     assert token4.check(path) == State.valid
     assert token4.check("huh") == State.intact
     assert token4.check(path, 10) == State.valid
@@ -93,7 +95,7 @@ def test_token_creation(config):
     else:
         ct = ct[0:3] + "f" + ct[4:]
 
-    token5 = Token.from_ciphertext(cfg, ct)
+    token5 = Token.from_ciphertext(cfg.key, ct)
     assert token5.check(path) == State.invalid
     assert token5.check("huh") == State.invalid
     assert token5.check(path, 10) == State.invalid
