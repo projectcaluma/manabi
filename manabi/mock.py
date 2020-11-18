@@ -60,7 +60,7 @@ def serve_document(
     config: Dict[str, Any], environ: Dict[str, Any], start_response: Callable
 ):
     path = "asdf.docx"
-    ti = Token.from_config(config).make(path)
+    ti = Token.from_dictionary(config).make(path)
     body = f"""
 <!doctype html>
 

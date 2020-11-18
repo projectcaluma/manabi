@@ -20,7 +20,7 @@ class TTL:
     refresh: int = cattrib(int)
 
     @classmethod
-    def from_config(cls, config: dict) -> "TTL":
+    def from_dictionary(cls, config: dict) -> "TTL":
         initial = config["manabi"]["initial"]
         refresh = config["manabi"]["refresh"]
         return cls(initial, refresh)
@@ -31,7 +31,7 @@ class Key:
     data: bytes = cattrib(bytes, lambda x: len(x) == 32)
 
     @classmethod
-    def from_config(cls, config: dict) -> "Key":
+    def from_dictionary(cls, config: dict) -> "Key":
         return cls(from_string(config["manabi"]["key"]))
 
 
@@ -41,8 +41,8 @@ class Config:
     ttl: TTL = cattrib(TTL)
 
     @classmethod
-    def from_config(cls, config: dict) -> "Config":
-        return cls(Key.from_config(config), TTL.from_config(config))
+    def from_dictionary(cls, config: dict) -> "Config":
+        return cls(Key.from_dictionary(config), TTL.from_dictionary(config))
 
 
 class State(Enum):
@@ -59,7 +59,13 @@ class Token:
     timestamp: int = cattrib(int, default=Factory(now))
     _ciphertext: str = cattrib(str, default=None)
 
-    def encode(self):
+    def as_url(self) -> str:
+        if self.path is None:
+            raise ValueError("path may not be None")
+        path = self.path.name
+        return f"{self.encode()}/{path}"
+
+    def encode(self) -> str:
         if self.path is None:
             raise ValueError("path may not be None")
         if self.timestamp is None:

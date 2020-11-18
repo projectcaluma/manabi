@@ -1,24 +1,26 @@
 from email.utils import formatdate
 from inspect import getsource
+from typing import Callable
 
 import base62  # type: ignore
 from attr import attrib
 
 
-def cattrib(attrib_type, check=None, **kwargs):
+def cattrib(attrib_type: type, check: Callable = None, **kwargs):
     none_is_ok = False
     if "default" in kwargs and kwargs["default"] is None:
         none_is_ok = True
 
     def handler(object, attribute, value):
-        if not (value is None and none_is_ok):
-            if not isinstance(value, attrib_type):
-                raise TypeError(
-                    f"{attribute.name} ({type(value)}) is not of type {attrib_type}"
-                )
-            if check and not check(value):
-                source = getsource(check).strip()
-                raise ValueError(f"check failed: {source}")
+        if value is None and none_is_ok:
+            return value
+        if not isinstance(value, attrib_type):
+            raise TypeError(
+                f"{attribute.name} ({type(value)}) is not of type {attrib_type}"
+            )
+        if check and not check(value):
+            source = getsource(check).strip()
+            raise ValueError(f"check failed: {source}")
         return value
 
     return attrib(validator=handler, on_setattr=handler, **kwargs)

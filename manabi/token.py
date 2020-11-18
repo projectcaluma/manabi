@@ -24,7 +24,7 @@ class Token:
     ttl_refresh: int
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]):
+    def from_dictionary(cls, config: Dict[str, Any]):
         return cls(
             config["manabi"]["key"],
             config["manabi"]["ttl_init"],

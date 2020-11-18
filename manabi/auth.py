@@ -97,7 +97,7 @@ class ManabiAuthenticator(BaseMiddleware):
             cookie = SimpleCookie(environ["HTTP_COOKIE"])
 
         config = environ["wsgidav.config"]
-        t = Token.from_config(config)
+        t = Token.from_dictionary(config)
         path = t.check(token)
         if not path and cookie:
             path = t.refresh_check(token)
