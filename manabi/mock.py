@@ -14,7 +14,7 @@ from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
-from .token import Token
+from .token import Key, Token
 from .util import get_rfc1123_time
 
 _server: Optional[wsgi.Server] = None
@@ -59,8 +59,9 @@ def get_config(server_dir: Path):
 def serve_document(
     config: Dict[str, Any], environ: Dict[str, Any], start_response: Callable
 ):
-    path = "asdf.docx"
-    ti = Token.from_dictionary(config).make(path)
+    path = Path("asdf.docx")
+    key = Key.from_dictionary(config)
+    ti = Token(key, path)
     body = f"""
 <!doctype html>
 
@@ -72,7 +73,7 @@ def serve_document(
 </head>
 
 <body>
-    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{ti.as_url()}</a>
+    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{ti.as_url()}">{path}</a>
 </body>
 </html>
 """.strip().encode(

@@ -6,7 +6,7 @@ import requests
 from .token import Key, Token
 
 
-def make_req(config: Dict[str, Any], override_path: Optional[str] = None) -> str:
+def make_req(config: Dict[str, Any], override_path: Optional[Path] = None) -> str:
     path = Path("asdf.docx")
     if override_path:
         path = override_path

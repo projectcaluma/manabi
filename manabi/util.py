@@ -3,13 +3,15 @@ from datetime import datetime
 from email.utils import formatdate
 from http.cookies import SimpleCookie
 from inspect import getsource
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import base62  # type: ignore
 from attr import attrib, dataclass
 
 
-def cattrib(attrib_type: type, check: Callable = None, **kwargs):
+def cattrib(
+    attrib_type: Optional[type] = None, check: Optional[Callable] = None, **kwargs
+):
     none_is_ok = False
     if "default" in kwargs and kwargs["default"] is None:
         none_is_ok = True
@@ -17,7 +19,7 @@ def cattrib(attrib_type: type, check: Callable = None, **kwargs):
     def handler(object, attribute, value):
         if value is None and none_is_ok:
             return value
-        if not isinstance(value, attrib_type):
+        if attrib_type is not None and not isinstance(value, attrib_type):
             raise TypeError(
                 f"{attribute.name} ({type(value)}) is not of type {attrib_type}"
             )
@@ -44,7 +46,7 @@ def from_string(data: str) -> bytes:
 
 @dataclass
 class AppInfo:
-    start_response: Callable = cattrib(Callable)
+    start_response: Callable = cattrib(check=lambda x: callable(x))
     environ: Dict[str, Any] = cattrib(dict)
     secure: bool = cattrib(bool, default=True)
 
@@ -58,7 +60,7 @@ def set_cookie(
     headers: List[Tuple[str, str]],
     exc_info=None,
 ):
-    cookie = SimpleCookie()
+    cookie: SimpleCookie = SimpleCookie()
     cookie[key] = value
     date = datetime.utcnow()
     unixtime = calendar.timegm(date.utctimetuple())
