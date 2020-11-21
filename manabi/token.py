@@ -48,8 +48,7 @@ class Config:
 class State(Enum):
     valid = 1, "the token is intact, path is valid and ttl ok"
     expired = 2, "the token is intact, path valid but the ttl is expired"
-    intact = 3, "the token is intact, but the path is not valid"
-    invalid = 4, "the token is not valid, authentication failed"
+    invalid = 3, "the token is not valid, authentication failed"
 
 
 @dataclass
@@ -91,22 +90,20 @@ class Token:
             return cls(key, None, timestamp)
         return cls(key, token_path, timestamp, ciphertext)
 
-    def check(self, path: Optional[Path] = None, ttl: Optional[int] = None) -> State:
+    def check(self, ttl: Optional[int] = None) -> State:
         if self.path is None:
             return State.invalid
-        if self.path != path or path is None:
-            return State.intact
         if ttl is not None:
             future = self.timestamp + ttl
             if now() > future:
                 return State.expired
         return State.valid
 
-    def refresh(self, path: Path, ttl: TTL) -> State:
-        return self.check(path, ttl.refresh)
+    def refresh(self, ttl: TTL) -> State:
+        return self.check(ttl.refresh)
 
-    def initial(self, path: Path, ttl: TTL) -> State:
-        return self.check(path, ttl.initial)
+    def initial(self, ttl: TTL) -> State:
+        return self.check(ttl.initial)
 
 
 def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:
