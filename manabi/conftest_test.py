@@ -7,7 +7,7 @@ from .token import Key, Token
 
 
 def make_req(config: Dict[str, Any], override_path: Optional[str] = None) -> str:
-    path = "asdf.docx"
+    path = Path("asdf.docx")
     if override_path:
         path = override_path
     key = Key.from_dictionary(config)

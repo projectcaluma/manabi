@@ -8,18 +8,8 @@ from unittest.mock import MagicMock
 from attr import dataclass
 from wsgidav.middleware import BaseMiddleware  # type: ignore
 
-from .token import Token
-from .util import get_rfc1123_time
-
-
-@dataclass
-class CookieInfo:
-    start_response: Callable
-    secure: bool
-    path: str
-    token: str
-    ttl: int
-
+from .token import Config, State, Token
+from .util import AppInfo, set_cookie
 
 _error_message_403 = """
 <html>
@@ -31,24 +21,6 @@ _error_message_403 = """
 """.strip().encode(
     "UTF-8"
 )
-
-
-def set_cookie(
-    info: CookieInfo, status: int, headers: List[Tuple[str, str]], exc_info=None
-) -> None:
-    path = info.path
-    cookie: SimpleCookie = SimpleCookie()
-    cookie[path] = info.token
-    date = datetime.utcnow()
-    unixtime = calendar.timegm(date.utctimetuple())
-    cookie[path]["expires"] = get_rfc1123_time(unixtime + info.ttl)
-    # TODO set locktimeout
-    if info.secure:
-        cookie[path]["secure"] = True
-        cookie[path]["httponly"] = True
-    entry = cast(Tuple[str, str], str(cookie).split(": "))
-    headers.append(entry)
-    info.start_response(status, headers, exc_info)
 
 
 class ManabiAuthenticator(BaseMiddleware):
@@ -76,41 +48,29 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def update_environ(
-        self, environ: Dict[str, Any], path: str, token_old: str, token: str
-    ) -> None:
-        environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
-        environ["manabi.path"] = f"/{path}"
-        if token_old != token:
-            for var in ("REQUEST_URI", "PATH_INFO"):
-                environ[var] = environ[var].replace(token_old, token)
+    def refresh(self, id_, info, token):
+        new = Token.from_token(token)
+        return self.next_app(info.environ, partial(set_cookie, info, id_, new.encode()))
 
     def __call__(
         self, environ: Dict[str, Any], start_response: Callable
     ) -> List[bytes]:
+        info = AppInfo(start_response, environ, self.manabi_secure())
+        config = Config.from_dictionary(environ["wsgidav.config"])
         path_info = environ["PATH_INFO"]
-        token, _, _ = path_info.strip("/").partition("/")
-        token_old = token
+        id_, _, _ = path_info.strip("/").partition("/")
+        initial = Token.from_ciphertext(config.key, id_)
 
-        cookie = None
-        if "HTTP_COOKIE" in environ:
-            cookie = SimpleCookie(environ["HTTP_COOKIE"])
-
-        config = environ["wsgidav.config"]
-        t = Token.from_dictionary(config)
-        path = t.check(token)
-        if not path and cookie:
-            path = t.refresh_check(token)
-
-        if not path:
+        if initial == State.invalid:
             return self.access_denied(start_response)
-        self.update_environ(environ, path, token_old, token)
-        ti = t.make(path)
-        info = CookieInfo(
-            start_response,
-            self.manabi_secure(),
-            path,
-            ti.token,
-            int(config["manabi"]["refresh"]),
-        )
-        return self.next_app(environ, partial(set_cookie, info))
+
+        cookie = environ.get("HTTP_COOKIE")
+        if cookie:
+            cookie = SimpleCookie(cookie)
+            refresh = cookie.get(initial.ciphertext)
+            if refresh and refresh.refresh(config.ttl) == State.valid:
+                return self.refresh(id_, info, refresh)
+
+        if initial.initial(config.ttl) == State.valid:
+            return self.refresh(id_, info, initial)
+        return self.access_denied(start_response)

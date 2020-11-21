@@ -1,9 +1,12 @@
+import calendar
+from datetime import datetime
 from email.utils import formatdate
+from http.cookies import SimpleCookie
 from inspect import getsource
-from typing import Callable
+from typing import Any, Callable, Dict, List, Tuple
 
 import base62  # type: ignore
-from attr import attrib
+from attr import attrib, dataclass
 
 
 def cattrib(attrib_type: type, check: Callable = None, **kwargs):
@@ -37,3 +40,30 @@ def to_string(data: bytes) -> str:
 
 def from_string(data: str) -> bytes:
     return base62.decodebytes(data)
+
+
+@dataclass
+class AppInfo:
+    start_response: Callable = cattrib(Callable)
+    environ: Dict[str, Any] = cattrib(dict)
+    secure: bool = cattrib(bool, default=True)
+
+
+def set_cookie(
+    info: AppInfo,
+    key: str,
+    value: str,
+    ttl: int,
+    status: int,
+    headers: List[Tuple[str, str]],
+    exc_info=None,
+):
+    cookie = SimpleCookie()
+    cookie[key] = value
+    date = datetime.utcnow()
+    unixtime = calendar.timegm(date.utctimetuple())
+    cookie[key]["expires"] = get_rfc1123_time(unixtime + ttl)
+    if info.secure:
+        cookie[key]["secure"] = True
+        cookie[key]["httponly"] = True
+    info.start_response(status, headers, exc_info)
