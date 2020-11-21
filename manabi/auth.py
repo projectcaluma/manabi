@@ -111,6 +111,6 @@ class ManabiAuthenticator(BaseMiddleware):
             self.manabi_secure(),
             path,
             ti.token,
-            int(config["manabi"]["ttl_refresh"]),
+            int(config["manabi"]["refresh"]),
         )
         return self.next_app(environ, partial(set_cookie, info))

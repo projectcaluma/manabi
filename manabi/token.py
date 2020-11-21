@@ -27,8 +27,8 @@ class Token:
     def from_dictionary(cls, config: Dict[str, Any]):
         return cls(
             config["manabi"]["key"],
-            config["manabi"]["ttl_init"],
-            config["manabi"]["ttl_refresh"],
+            config["manabi"]["initial"],
+            config["manabi"]["refresh"],
         )
 
     def make(self, path: str) -> str:
