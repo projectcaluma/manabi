@@ -1,7 +1,6 @@
 import shutil
 from pathlib import Path
 from subprocess import PIPE, run
-from time import sleep
 
 import pytest
 from branca import Branca  # type: ignore

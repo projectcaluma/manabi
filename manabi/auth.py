@@ -1,15 +1,12 @@
-import calendar
-from datetime import datetime
 from functools import partial
 from http.cookies import SimpleCookie
-from typing import Any, Callable, Dict, List, Tuple, cast
+from typing import Any, Callable, Dict, List
 from unittest.mock import MagicMock
 
-from attr import dataclass
 from wsgidav.middleware import BaseMiddleware  # type: ignore
 
 from .token import Config, State, Token
-from .util import AppInfo, set_cookie
+from .util import AppInfo, get_rfc1123_time, set_cookie
 
 _error_message_403 = """
 <html>
