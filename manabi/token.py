@@ -1,59 +1,121 @@
-import os
-from typing import Any, Dict, Optional
+import calendar
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Optional
 
-from attr import dataclass
+from attr import Factory, dataclass
 from branca import Branca  # type: ignore
 
-from .util import from_string
+from .util import cattrib, from_string
+
+
+def now() -> int:
+    return calendar.timegm(datetime.utcnow().timetuple())
 
 
 @dataclass
-class TokenInfo:
-    token: str
-    path: str
+class TTL:
+    initial: int = cattrib(int)
+    refresh: int = cattrib(int)
 
-    def as_url(self):
-        path = self.path.split(os.pathsep)[-1]
-        return f"{self.token}/{path}"
+    @classmethod
+    def from_dictionary(cls, config: dict) -> "TTL":
+        initial = config["manabi"]["initial"]
+        refresh = config["manabi"]["refresh"]
+        return cls(initial, refresh)
+
+
+@dataclass
+class Key:
+    data: bytes = cattrib(bytes, lambda x: len(x) == 32)
+
+    @classmethod
+    def from_dictionary(cls, config: dict) -> "Key":
+        return cls(from_string(config["manabi"]["key"]))
+
+
+@dataclass
+class Config:
+    key: Key = cattrib(Key)
+    ttl: TTL = cattrib(TTL)
+
+    @classmethod
+    def from_dictionary(cls, config: dict) -> "Config":
+        return cls(Key.from_dictionary(config), TTL.from_dictionary(config))
+
+
+class State(Enum):
+    valid = 1, "the token is intact, path is valid and ttl ok"
+    expired = 2, "the token is intact, path valid but the ttl is expired"
+    intact = 3, "the token is intact, but the path is not valid"
+    invalid = 4, "the token is not valid, authentication failed"
 
 
 @dataclass
 class Token:
-    key: str
-    ttl_init: int
-    ttl_refresh: int
+    key: Key = cattrib(Key)
+    path: Optional[Path] = cattrib(Path, default=None)
+    timestamp: int = cattrib(int, default=Factory(now))
+    ciphertext: str = cattrib(str, default=None)
+
+    def as_url(self) -> str:
+        if self.path is None:
+            raise ValueError("path may not be None")
+        path = self.path.name
+        return f"{self.encode()}/{path}"
+
+    def encode(self) -> str:
+        if self.path is None:
+            raise ValueError("path may not be None")
+        if self.timestamp is None:
+            self.timestamp = self.now()
+        self.ciphertext = _encode(self.key.data, str(self.path), self.timestamp)
+        return self.ciphertext
 
     @classmethod
-    def from_dictionary(cls, config: Dict[str, Any]):
-        return cls(
-            config["manabi"]["key"],
-            config["manabi"]["initial"],
-            config["manabi"]["refresh"],
-        )
+    def from_token(cls, token: "Token", timestamp: int = None) -> "Token":
+        if timestamp is None:
+            return cls(token.key, token.path, now())
+        else:
+            return cls(token.key, token.path, timestamp)
 
-    def make(self, path: str) -> str:
-        return TokenInfo(make_token(self.key, path), path)
-
-    def check_ttl(self, data: str, ttl: Optional[int] = None) -> Optional[str]:
+    @classmethod
+    def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":
+        assert ciphertext
+        branca = Branca(key.data)
+        timestamp = branca.timestamp(ciphertext)
         try:
-            return check_token(self.key, data, ttl)
-        except (RuntimeError, ValueError):
-            return None
+            token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
+        except RuntimeError:
+            return cls(key, None, timestamp)
+        return cls(key, token_path, timestamp, ciphertext)
 
-    def check(self, data: str) -> Optional[str]:
-        return self.check_ttl(data, self.ttl_init)
+    def check(self, path: Optional[Path] = None, ttl: Optional[int] = None) -> State:
+        if self.path is None:
+            return State.invalid
+        if self.path != path or path is None:
+            return State.intact
+        if ttl is not None:
+            future = self.timestamp + ttl
+            if now() > future:
+                return State.expired
+        return State.valid
 
-    def refresh_check(self, data: str) -> Optional[str]:
-        return self.check_ttl(data, self.ttl_refresh)
+    def refresh(self, path: Path, ttl: TTL) -> State:
+        return self.check(path, ttl.refresh)
+
+    def initial(self, path: Path, ttl: TTL) -> State:
+        return self.check(path, ttl.initial)
 
 
-def make_token(key: str, path: str, now: Optional[int] = None) -> str:
-    f = Branca(from_string(key))
+def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:
+    f = Branca(key)
     p = path.encode("UTF-8")
-    ct = f.encode(p, now)
-    return ct
+    ciphertext = f.encode(p, now)
+    return ciphertext
 
 
-def check_token(key: str, data: str, ttl=None) -> str:
-    f = Branca(from_string(key))
-    return f.decode(data, ttl).decode("UTF-8")
+def _decode(key: bytes, ciphertext: str, ttl=None) -> str:
+    f = Branca(key)
+    return f.decode(ciphertext, ttl).decode("UTF-8")

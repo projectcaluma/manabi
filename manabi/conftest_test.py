@@ -3,20 +3,20 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from .token import Token
+from .token import Key, Token
 
 
 def make_req(config: Dict[str, Any], override_path: Optional[str] = None) -> str:
-    t = Token.from_dictionary(config)
     path = "asdf.docx"
     if override_path:
         path = override_path
-    ti = t.make(path)
-    return f"http://localhost:8080/dav/{ti.as_url()}"
+    key = Key.from_dictionary(config)
+    t = Token(key, path)
+    return f"http://localhost:8080/dav/{t.as_url()}"
 
 
 def test_server_failure(server, config: Dict[str, Any]):
-    res = requests.get(make_req(config, "blabla.pdf"))
+    res = requests.get(make_req(config, Path("blabla.pdf")))
     assert res.status_code == 404
 
 
