@@ -12,6 +12,10 @@ TODO
 
 * test refresh
 
+* test cookie timeout
+
+* test request-based token timeout
+
 TODO later
 ----------
 
