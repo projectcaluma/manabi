@@ -2,7 +2,12 @@ from typing import Any, Dict
 
 from wsgidav.fs_dav_provider import FilesystemProvider  # type: ignore
 
+from .token import Token
+
 
 class ManabiProvider(FilesystemProvider):
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
-        return super().get_resource_inst(path, environ)
+        token: Token = environ["manabi.token"]
+        path = token.path_as_url()
+        inst = super().get_resource_inst(path, environ)
+        return inst

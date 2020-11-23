@@ -49,7 +49,7 @@ class ManabiAuthenticator(BaseMiddleware):
         environ = info.environ
         # Update the path for security, so we can't ever be tricked into serving a
         # path not authenticated by the token.
-        path = f"/{token.path}"
+        path = token.path_as_url()
         environ["PATH_INFO"] = path
         environ["REQUEST_URI"] = path
         environ["manabi.path"] = path

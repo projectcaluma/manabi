@@ -64,6 +64,9 @@ class Token:
         path = self.path.name
         return f"{self.encode()}/{path}"
 
+    def path_as_url(self) -> str:
+        return f"/{self.path}"
+
     def encode(self) -> str:
         if self.path is None:
             raise ValueError("path may not be None")
