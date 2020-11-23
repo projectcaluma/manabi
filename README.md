@@ -4,7 +4,13 @@ Manabi
 TODO
 ----
 
-* use _loc_to_file_path to get names from filesystem
+* test all kinds of path
+  * hypothesis
+  * prefix manipulated
+  * subfix manipulated
+  * token manipulated
+
+* test refresh
 
 TODO later
 ----------
