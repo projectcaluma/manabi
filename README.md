@@ -8,6 +8,10 @@ TODO
   * Switch to setting.py
   * fixture to override settting.py
 
+* get_member_names() direkt liste generiern
+* use _loc_to_file_path to get names from filesystem
+* use has_a instead of is_a to harden against implementation changes
+
 Install
 -------
 

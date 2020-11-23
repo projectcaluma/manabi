@@ -20,13 +20,15 @@ from .util import get_rfc1123_time
 _server: Optional[wsgi.Server] = None
 _server_dir = Path("/tmp/296fe33fcca")
 _module_dir = Path(__file__).parent
-_test_file = Path(_module_dir, "data", "asdf.docx")
+_test_file1 = Path(_module_dir, "data", "asdf.docx")
+_test_file2 = Path(_module_dir, "data", "qwert.docx")
 
 
 def get_server_dir():
     if not _server_dir.exists():
         _server_dir.mkdir()
-        shutil.copy(_test_file, _server_dir)
+        shutil.copy(_test_file1, _server_dir)
+        shutil.copy(_test_file2, _server_dir)
 
     return _server_dir
 
