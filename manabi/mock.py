@@ -52,6 +52,7 @@ def get_config(server_dir: Path):
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "refresh": 600,
             "initial": 600,
+            "base_url": "localhost:8080",
         },
     }
 
@@ -62,6 +63,7 @@ def serve_document(
     path = Path("asdf.docx")
     key = Key.from_dictionary(config)
     ti = Token(key, path)
+    base = config["manabi"]["base_url"]
     body = f"""
 <!doctype html>
 
@@ -73,7 +75,12 @@ def serve_document(
 </head>
 
 <body>
-    <a href="ms-word:ofe|u|http://192.168.1.11:8080/dav/{ti.as_url()}">{path}</a>
+    <h1>word link</h1>
+    <a href="ms-word:ofe|u|http://{base}/dav/{ti.as_url()}">{path}</a>
+    <h1>webdav link</h1>
+    <a href="webdav://{base}/dav/{ti.as_url()}">{path}</a>
+    <h1>http link</h1>
+    <a href="http://{base}/dav/{ti.as_url()}">{path}</a>
 </body>
 </html>
 """.strip().encode(
