@@ -45,19 +45,21 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def update_env(self, info: AppInfo, token):
+    def update_env(self, info: AppInfo, token: Token, id_: str):
         environ = info.environ
         # Update the path for security, so we can't ever be tricked into serving a
         # path not authenticated by the token.
         path = f"/{token.path}"
         environ["PATH_INFO"] = path
         environ["REQUEST_URI"] = path
-        # environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
-        # environ["manabi.path"] = f"/{path}"
+        environ["manabi.path"] = path
+
+        environ["wsgidav.auth.user_name"] = f"{path}|{id_[10:14]}"
+        environ["manabi.token"] = token
 
     def refresh(self, id_: str, info: AppInfo, token: Token, ttl: int):
         new = Token.from_token(token)
-        self.update_env(info, token)
+        self.update_env(info, token, id_)
         return self.next_app(
             info.environ,
             partial(set_cookie, info, id_, new.encode(), ttl),
