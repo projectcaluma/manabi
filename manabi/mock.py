@@ -62,9 +62,11 @@ def get_config(server_dir: Path):
 def serve_document(
     config: Dict[str, Any], environ: Dict[str, Any], start_response: Callable
 ):
-    path = Path("asdf.docx")
     key = Key.from_dictionary(config)
-    ti = Token(key, path)
+    path1 = Path("asdf.docx")
+    url1 = Token(key, path1).as_url()
+    path2 = Path("nope.docx")
+    url2 = Token(key, path2).as_url()
     base = config["manabi"]["base_url"]
     body = f"""
 <!doctype html>
@@ -77,12 +79,20 @@ def serve_document(
 </head>
 
 <body>
-    <h1>word link</h1>
-    <a href="ms-word:ofe|u|http://{base}/dav/{ti.as_url()}">{path}</a>
-    <h1>webdav link</h1>
-    <a href="webdav://{base}/dav/{ti.as_url()}">{path}</a>
-    <h1>http link</h1>
-    <a href="http://{base}/dav/{ti.as_url()}">{path}</a>
+    <h1>existing</h1>
+    <h2>word link</h2>
+    <a href="ms-word:ofe|u|http://{base}/dav/{url1}">{path1}</a>
+    <h2>webdav link</h2>
+    <a href="webdav://{base}/dav/{url1}">{path1}</a>
+    <h2>http link</h2>
+    <a href="http://{base}/dav/{url1}">{path1}</a>
+    <h1>non-existing</h1>
+    <h2>word link</h2>
+    <a href="ms-word:ofe|u|http://{base}/dav/{url2}">{path2}</a>
+    <h2>webdav link</h2>
+    <a href="webdav://{base}/dav/{url2}">{path2}</a>
+    <h2>http link</h2>
+    <a href="http://{base}/dav/{url2}">{path2}</a>
 </body>
 </html>
 """.strip().encode(

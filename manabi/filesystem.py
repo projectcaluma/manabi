@@ -7,16 +7,14 @@ from wsgidav.fs_dav_provider import FilesystemProvider, FolderResource  # type: 
 from .token import Token
 
 
-# TODO maybe for security we should inherit from DAVCollection so it is not possible to
-# leak information, if the implementation of FolderResource changes
-#
-# Attack by authenticated user
 class ManabiFolderResource(FolderResource):
     def get_member_names(self):
         token: Token = self.environ["manabi.token"]
-        path = token.path
-        names = super().get_member_names()
-        return list(filter(lambda x: Path(x) == path, names))
+        path = Path(self._file_path, token.path)
+        if path.exists():
+            return [str(token.path)]
+        else:
+            return []
 
     def get_member(self, name):
         token: Token = self.environ["manabi.token"]
@@ -47,10 +45,6 @@ class ManabiFolderResource(FolderResource):
         raise DAVError(HTTP_FORBIDDEN)
 
 
-# TODO maybe for security we should inherit from DAVProvider so it is not possible to
-# leak information, if the implementation of FilesystemProvider changes
-#
-# Attack by authenticated user
 class ManabiProvider(FilesystemProvider):
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
         token: Token = environ["manabi.token"]
@@ -62,4 +56,7 @@ class ManabiProvider(FilesystemProvider):
             return ManabiFolderResource(path, environ, fp)
         else:
             path = token.path_as_url()
-            return super().get_resource_inst(path, environ)
+            if Path(fp).exists():
+                return super().get_resource_inst(path, environ)
+            else:
+                return None

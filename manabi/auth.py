@@ -73,8 +73,11 @@ class ManabiAuthenticator(BaseMiddleware):
         path_info = environ["PATH_INFO"]
         id_, _, suffix = path_info.strip("/").partition("/")
         suffix = suffix.strip("/")
-        environ["manabi.dir_access"] = suffix is ""
-        initial = Token.from_ciphertext(config.key, id_)
+        environ["manabi.dir_access"] = suffix == ""
+        try:
+            initial = Token.from_ciphertext(config.key, id_)
+        except ValueError:
+            return self.access_denied(start_response)
 
         if initial == State.invalid:
             return self.access_denied(start_response)
