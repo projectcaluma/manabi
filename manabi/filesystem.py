@@ -2,7 +2,11 @@ from pathlib import Path
 from typing import Any, Dict
 
 from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError  # type: ignore
-from wsgidav.fs_dav_provider import FilesystemProvider, FolderResource  # type: ignore
+from wsgidav.fs_dav_provider import (  # type: ignore
+    FileResource,
+    FilesystemProvider,
+    FolderResource,
+)
 
 from .token import Token
 
@@ -45,6 +49,26 @@ class ManabiFolderResource(FolderResource):
         raise DAVError(HTTP_FORBIDDEN)
 
 
+class ManabiFileResource(FileResource):
+    def begin_write(self, content_type=None):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def delete(self):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def copy_move_single(self, dest_path, is_move):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def support_recursive_move(self, dest_path):
+        return False
+
+    def move_recursive(self, dest_path):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def set_last_modified(self, dest_path, time_stamp, dry_run):
+        raise DAVError(HTTP_FORBIDDEN)
+
+
 class ManabiProvider(FilesystemProvider):
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
         token: Token = environ["manabi.token"]
@@ -56,7 +80,8 @@ class ManabiProvider(FilesystemProvider):
             return ManabiFolderResource(path, environ, fp)
         else:
             path = token.path_as_url()
+            fp = self._loc_to_file_path(path, environ)
             if Path(fp).exists():
-                return super().get_resource_inst(path, environ)
+                return ManabiFileResource(path, environ, fp)
             else:
                 return None
