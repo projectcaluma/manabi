@@ -24,4 +24,5 @@ def test_server_file(config: Dict[str, Any], server, server_dir: Path):
     with open(Path(server_dir, "asdf.docx"), "rb") as f:
         exp = f.read()
         res = requests.get(make_req(config))
+        assert res.status_code == 200
         assert exp == res.content

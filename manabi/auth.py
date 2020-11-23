@@ -45,9 +45,23 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [body]
 
-    def refresh(self, id_, info, token):
+    def update_env(self, info: AppInfo, token):
+        environ = info.environ
+        # Update the path for security, so we can't ever be tricked into serving a
+        # path not authenticated by the token.
+        path = f"/{token.path}"
+        environ["PATH_INFO"] = path
+        environ["REQUEST_URI"] = path
+        # environ["wsgidav.auth.user_name"] = f"{path}|{token[10:14]}"
+        # environ["manabi.path"] = f"/{path}"
+
+    def refresh(self, id_: str, info: AppInfo, token: Token, ttl: int):
         new = Token.from_token(token)
-        return self.next_app(info.environ, partial(set_cookie, info, id_, new.encode()))
+        self.update_env(info, token)
+        return self.next_app(
+            info.environ,
+            partial(set_cookie, info, id_, new.encode(), ttl),
+        )
 
     def __call__(
         self, environ: Dict[str, Any], start_response: Callable
@@ -62,12 +76,13 @@ class ManabiAuthenticator(BaseMiddleware):
             return self.access_denied(start_response)
 
         cookie = environ.get("HTTP_COOKIE")
+        ttl = config.ttl.refresh
         if cookie:
             cookie = SimpleCookie(cookie)
             refresh = cookie.get(initial.ciphertext)
             if refresh and refresh.refresh(config.ttl) == State.valid:
-                return self.refresh(id_, info, refresh)
+                return self.refresh(id_, info, refresh, ttl)
 
         if initial.initial(config.ttl) == State.valid:
-            return self.refresh(id_, info, initial)
+            return self.refresh(id_, info, initial, ttl)
         return self.access_denied(start_response)
