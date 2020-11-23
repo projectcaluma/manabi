@@ -10,8 +10,8 @@ class ManabiProvider(FilesystemProvider):
         token: Token = environ["manabi.token"]
         dir_access = environ["manabi.dir_access"]
         if dir_access:
-            path = "/"
+            path = f"/{str(token.path.parent)}"
+            return super().get_resource_inst(path, environ)
         else:
             path = token.path_as_url()
-        inst = super().get_resource_inst(path, environ)
-        return inst
+            return super().get_resource_inst(path, environ)
