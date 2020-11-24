@@ -13,11 +13,10 @@ _error_message_403 = """
     <head><title>403 Forbidden</title></head>
     <body>
         <h1>403 Forbidden</h1>
+        {0}
     </body>
 </html>
-""".strip().encode(
-    "UTF-8"
-)
+""".strip()
 
 
 class ManabiAuthenticator(BaseMiddleware):
@@ -33,8 +32,9 @@ class ManabiAuthenticator(BaseMiddleware):
             return True
         return manabi["secure"]
 
-    def access_denied(self, start_response: Callable) -> List[bytes]:
+    def access_denied(self, start_response: Callable, reason: str = "") -> List[bytes]:
         body = _error_message_403
+        body = body.format(reason).encode("UTF-8")
         start_response(
             "403 Forbidden",
             [
@@ -73,13 +73,14 @@ class ManabiAuthenticator(BaseMiddleware):
         path_info = environ["PATH_INFO"]
         id_, _, suffix = path_info.strip("/").partition("/")
         if not id_:
-            return self.access_denied(start_response)
+            return self.access_denied(start_response, "no token supplied")
         suffix = suffix.strip("/")
         environ["manabi.dir_access"] = suffix == ""
         initial = Token.from_ciphertext(config.key, id_)
+        check = initial.check()
 
-        if initial == State.invalid:
-            return self.access_denied(start_response)
+        if check == State.invalid:
+            return self.access_denied(start_response, check.value[1])
 
         cookie = environ.get("HTTP_COOKIE")
         ttl = config.ttl.refresh
@@ -89,6 +90,7 @@ class ManabiAuthenticator(BaseMiddleware):
             if refresh and refresh.refresh(config.ttl) == State.valid:
                 return self.refresh(id_, info, refresh, ttl)
 
+        check = initial.initial(config.ttl)
         if initial.initial(config.ttl) == State.valid:
             return self.refresh(id_, info, initial, ttl)
-        return self.access_denied(start_response)
+        return self.access_denied(start_response, check.value[1])

@@ -158,3 +158,16 @@ def branca_impl() -> Generator[None, None, None]:
     os.chdir(Path(_module_dir.parent, "branca-test"))
     yield
     os.chdir(cwd)
+
+
+def make_token(config: Dict[str, Any], override_path: Optional[Path] = None) -> Token:
+    path = Path("asdf.docx")
+    if override_path:
+        path = override_path
+    key = Key.from_dictionary(config)
+    return Token(key, path)
+
+
+def make_req(config: Dict[str, Any], override_path: Optional[Path] = None) -> str:
+    t = make_token(config, override_path)
+    return f"http://localhost:8080/dav/{t.as_url()}"
