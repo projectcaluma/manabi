@@ -4,11 +4,7 @@ Manabi
 TODO
 ----
 
-* test all kinds of path
-  * hypothesis
-  * prefix manipulated
-  * subfix manipulated
-  * token manipulated
+* report actually allowed method, eg no MOVE
 
 * test refresh
 
