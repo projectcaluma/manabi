@@ -34,16 +34,16 @@ class ManabiAuthenticator(BaseMiddleware):
 
     def access_denied(self, start_response: Callable, reason: str = "") -> List[bytes]:
         body = _error_message_403
-        body = body.format(reason).encode("UTF-8")
+        content = body.format(reason).encode("UTF-8")
         start_response(
             "403 Forbidden",
             [
                 ("Content-Type", "text/html"),
-                ("Content-Length", str(len(body))),
+                ("Content-Length", str(len(content))),
                 ("Date", get_rfc1123_time()),
             ],
         )
-        return [body]
+        return [content]
 
     def update_env(self, info: AppInfo, token: Token, id_: str):
         environ = info.environ

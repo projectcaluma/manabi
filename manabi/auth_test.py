@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, cast
 
 import pytest
 import requests
@@ -33,7 +33,7 @@ def test_structured_force(mod_server, url):
     assert res.status_code == 403
 
 
-@given(lists(text()).flatmap(lambda x: permutations(x + [None])), booleans())
+@given(lists(text()).flatmap(lambda x: permutations(x + [cast(str, None)])), booleans())
 def test_force_with_token(mod_server, url, past):
     shift = 1200
     if past:
