@@ -27,46 +27,41 @@ class ManabiFolderResource(FolderResource):
             raise DAVError(HTTP_FORBIDDEN)
         return super().get_member(name)
 
-    def create_empty_resource(self, name):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def create_empty_resource(self, name):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def create_collection(self, name):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def create_collection(self, name):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def delete(self):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def delete(self):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def copy_move_single(self, dest_path, is_move):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def copy_move_single(self, dest_path, is_move):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def support_recursive_move(self, dest_path):
-        return False
+    # def support_recursive_move(self, dest_path):
+    #     return False
 
-    def move_recursive(self, dest_path):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def move_recursive(self, dest_path):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def set_last_modified(self, dest_path, time_stamp, dry_run):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def set_last_modified(self, dest_path, time_stamp, dry_run):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
 
 class ManabiFileResource(FileResource):
-    def begin_write(self, content_type=None):
-        raise DAVError(HTTP_FORBIDDEN)
+    pass
+    # def delete(self):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def delete(self):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def copy_move_single(self, dest_path, is_move):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
-    def copy_move_single(self, dest_path, is_move):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def support_recursive_move(self, dest_path):
+    #     return False
 
-    def support_recursive_move(self, dest_path):
-        return False
-
-    def move_recursive(self, dest_path):
-        raise DAVError(HTTP_FORBIDDEN)
-
-    def set_last_modified(self, dest_path, time_stamp, dry_run):
-        raise DAVError(HTTP_FORBIDDEN)
+    # def move_recursive(self, dest_path):
+    #     raise DAVError(HTTP_FORBIDDEN)
 
 
 class ManabiProvider(FilesystemProvider):

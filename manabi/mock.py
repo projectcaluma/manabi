@@ -54,7 +54,7 @@ def get_config(server_dir: Path):
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "refresh": 600,
             "initial": 600,
-            "base_url": "localhost:8080",
+            "base_url": "192.168.1.116:8080",
         },
     }
 
