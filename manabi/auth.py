@@ -74,8 +74,6 @@ class ManabiAuthenticator(BaseMiddleware):
         id_, _, suffix = path_info.strip("/").partition("/")
         if not id_:
             return self.access_denied(start_response, "no token supplied")
-        suffix = suffix.strip("/")
-        environ["manabi.dir_access"] = suffix == ""
         initial = Token.from_ciphertext(config.key, id_)
         check = initial.check()
 
