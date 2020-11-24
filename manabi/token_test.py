@@ -40,6 +40,22 @@ def test_config_validator(config):
         cfg.key = "huhu"
 
 
+def test_token_invalid_past(config):
+    cfg = Config.from_dictionary(config)
+    path = Path("asdf.docx")
+    with mock.shift_now(-1200):
+        token = Token(cfg.key, path)
+    assert token.check(10) == State.expired
+
+
+def test_token_invalid_future(config):
+    cfg = Config.from_dictionary(config)
+    path = Path("asdf.docx")
+    with mock.shift_now(1200):
+        token = Token(cfg.key, path)
+    assert token.check(10) == State.not_valid_yet
+
+
 def test_token_creation(config):
     cfg = Config.from_dictionary(config)
     path = Path("asdf.docx")

@@ -49,14 +49,17 @@ class Config:
 class State(Enum):
     valid = 1, "the token is intact, path is valid and ttl ok"
     expired = 2, "the token is intact, path valid but the ttl is expired"
-    invalid = 3, "the token is not valid, authentication failed"
+    not_valid_yet = 3, "the token intact, but not valid yet, clockskew?"
+    invalid = 4, "the token is not valid, authentication failed"
 
 
 @dataclass
 class Token:
     key: Key = cattrib(Key)
     path: Optional[Path] = cattrib(Path, default=None)
-    timestamp: Optional[int] = cattrib(int, default=Factory(now), optional=True)
+    timestamp: Optional[int] = cattrib(
+        int, default=Factory(lambda: now()), optional=True
+    )
     ciphertext: str = cattrib(str, default=None)
 
     def as_url(self) -> str:
@@ -102,7 +105,11 @@ class Token:
             return State.invalid
         if ttl is not None:
             future = self.timestamp + ttl
-            if now() > future:
+            past = self.timestamp - 1
+            t = now()
+            if t < past:
+                return State.not_valid_yet
+            if t > future:
                 return State.expired
         return State.valid
 

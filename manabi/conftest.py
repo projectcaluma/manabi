@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 from subprocess import run
 from typing import Any, Dict, Generator
+from unittest import mock as unitmock
 
 import pytest  # type: ignore
 
@@ -22,6 +23,18 @@ def config(server_dir) -> Dict[str, Any]:
 def server(config: Dict[str, Any]) -> Generator:
     with mock.run_server(config):
         yield
+
+
+@pytest.fixture()
+def mock_now_invalid_past() -> Generator[unitmock.MagicMock, None, None]:
+    with mock.shift_now(-1200) as m:
+        yield m
+
+
+@pytest.fixture()
+def mock_now_invalid_future() -> Generator[unitmock.MagicMock, None, None]:
+    with mock.shift_now(1200) as m:
+        yield m
 
 
 @pytest.fixture(scope="module")

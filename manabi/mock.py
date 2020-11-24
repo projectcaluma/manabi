@@ -5,6 +5,7 @@ from functools import partial
 from pathlib import Path
 from threading import Thread
 from typing import Any, Callable, Dict, Generator, Optional
+from unittest import mock as unitmock
 
 from cheroot import wsgi  # type: ignore
 from wsgidav.debug_filter import WsgiDavDebugFilter  # type: ignore
@@ -15,7 +16,7 @@ from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
-from .token import Key, Token
+from .token import Key, Token, now
 from .util import get_rfc1123_time
 
 _server: Optional[wsgi.Server] = None
@@ -132,7 +133,15 @@ def get_server(config: Dict[str, Any]):
 
 
 @contextmanager
-def run_server(config: Dict[str, Any]) -> Generator:
+def shift_now(offset: int) -> Generator[unitmock.MagicMock, None, None]:
+    new = now() + offset
+    with unitmock.patch("manabi.token.now") as m:
+        m.return_value = new
+        yield m
+
+
+@contextmanager
+def run_server(config: Dict[str, Any]) -> Generator[None, None, None]:
     global _server
     server = get_server(config)
     thread = Thread(target=partial(server.serve))
@@ -144,7 +153,7 @@ def run_server(config: Dict[str, Any]) -> Generator:
 
 
 @contextmanager
-def branca_impl() -> Generator:
+def branca_impl() -> Generator[None, None, None]:
     cwd = Path().cwd()
     os.chdir(Path(_module_dir.parent, "branca-test"))
     yield
