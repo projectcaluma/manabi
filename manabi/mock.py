@@ -3,7 +3,8 @@ import shutil
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from threading import Thread
+from typing import Any, Callable, Dict, Generator, Optional
 
 from cheroot import wsgi  # type: ignore
 from wsgidav.debug_filter import WsgiDavDebugFilter  # type: ignore
@@ -27,8 +28,8 @@ _test_file2 = Path(_module_dir, "data", "qwert.docx")
 def get_server_dir():
     if not _server_dir.exists():
         _server_dir.mkdir()
-        shutil.copy(_test_file1, _server_dir)
-        shutil.copy(_test_file2, _server_dir)
+    shutil.copy(_test_file1, _server_dir)
+    shutil.copy(_test_file2, _server_dir)
 
     return _server_dir
 
@@ -131,7 +132,19 @@ def get_server(config: Dict[str, Any]):
 
 
 @contextmanager
-def branca_impl():
+def run_server(config: Dict[str, Any]) -> Generator:
+    global _server
+    server = get_server(config)
+    thread = Thread(target=partial(server.serve))
+    thread.start()
+    yield
+    server.stop()
+    thread.join()
+    _server = None
+
+
+@contextmanager
+def branca_impl() -> Generator:
     cwd = Path().cwd()
     os.chdir(Path(_module_dir.parent, "branca-test"))
     yield

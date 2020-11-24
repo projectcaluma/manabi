@@ -1,8 +1,6 @@
 import shutil
-from functools import partial
 from pathlib import Path
 from subprocess import run
-from threading import Thread
 from typing import Any, Dict, Generator
 
 import pytest  # type: ignore
@@ -22,13 +20,8 @@ def config(server_dir) -> Dict[str, Any]:
 
 @pytest.fixture()
 def server(config: Dict[str, Any]) -> Generator:
-    server = mock.get_server(config)
-    thread = Thread(target=partial(server.serve))
-    thread.start()
-    yield
-    server.stop()
-    thread.join()
-    mock._server = None
+    with mock.run_server(config):
+        yield
 
 
 @pytest.fixture(scope="module")

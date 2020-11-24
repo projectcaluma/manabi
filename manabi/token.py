@@ -1,4 +1,5 @@
 import calendar
+import struct
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -55,7 +56,7 @@ class State(Enum):
 class Token:
     key: Key = cattrib(Key)
     path: Optional[Path] = cattrib(Path, default=None)
-    timestamp: int = cattrib(int, default=Factory(now))
+    timestamp: Optional[int] = cattrib(int, default=Factory(now), optional=True)
     ciphertext: str = cattrib(str, default=None)
 
     def as_url(self) -> str:
@@ -71,7 +72,7 @@ class Token:
         if self.path is None:
             raise ValueError("path may not be None")
         if self.timestamp is None:
-            self.timestamp = self.now()
+            self.timestamp = now()
         self.ciphertext = _encode(self.key.data, str(self.path), self.timestamp)
         return self.ciphertext
 
@@ -86,7 +87,10 @@ class Token:
     def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":
         assert ciphertext
         branca = Branca(key.data)
-        timestamp = branca.timestamp(ciphertext)
+        try:
+            timestamp = branca.timestamp(ciphertext)
+        except (struct.error, ValueError):
+            return cls(key, None, None)
         try:
             token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
         except RuntimeError:
@@ -94,7 +98,7 @@ class Token:
         return cls(key, token_path, timestamp, ciphertext)
 
     def check(self, ttl: Optional[int] = None) -> State:
-        if self.path is None:
+        if self.path is None or self.timestamp is None:
             return State.invalid
         if ttl is not None:
             future = self.timestamp + ttl

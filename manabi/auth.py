@@ -72,12 +72,11 @@ class ManabiAuthenticator(BaseMiddleware):
         config = Config.from_dictionary(environ["wsgidav.config"])
         path_info = environ["PATH_INFO"]
         id_, _, suffix = path_info.strip("/").partition("/")
+        if not id_:
+            return self.access_denied(start_response)
         suffix = suffix.strip("/")
         environ["manabi.dir_access"] = suffix == ""
-        try:
-            initial = Token.from_ciphertext(config.key, id_)
-        except ValueError:
-            return self.access_denied(start_response)
+        initial = Token.from_ciphertext(config.key, id_)
 
         if initial == State.invalid:
             return self.access_denied(start_response)

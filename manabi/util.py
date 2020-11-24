@@ -10,14 +10,16 @@ from attr import attrib, dataclass
 
 
 def cattrib(
-    attrib_type: Optional[type] = None, check: Optional[Callable] = None, **kwargs
+    attrib_type: Optional[type] = None,
+    check: Optional[Callable] = None,
+    optional: bool = False,
+    **kwargs,
 ):
-    none_is_ok = False
     if "default" in kwargs and kwargs["default"] is None:
-        none_is_ok = True
+        optional = True
 
     def handler(object, attribute, value):
-        if value is None and none_is_ok:
+        if value is None and optional:
             return value
         if attrib_type is not None and not isinstance(value, attrib_type):
             raise TypeError(
