@@ -1,4 +1,4 @@
-from wsgidav.lock_storage import LockStorageDict
+from wsgidav.lock_storage import LockStorageDict  # type: ignore
 
 
 # Actually we'd like to extend LockManager not LockStorage, but the config only allows

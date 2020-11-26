@@ -37,7 +37,8 @@ def get_server_dir():
 
 
 def get_config(server_dir: Path):
-    refresh = 60
+    refresh = 600
+    base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8080"
     return {
         "host": "0.0.0.0",
         "port": 8080,
@@ -58,8 +59,8 @@ def get_config(server_dir: Path):
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "refresh": refresh,
-            "initial": 60,
-            "base_url": "192.168.1.116:8080",
+            "initial": 600,
+            "base_url": base_url,
         },
     }
 
@@ -70,7 +71,6 @@ def serve_document(
     key = Key.from_dictionary(config)
     path1 = Path("asdf.docx")
     url1 = Token(key, path1).as_url()
-    url1odt = f"{url1[:-5]}.odt"
     path2 = Path("nope.docx")
     url2 = Token(key, path2).as_url()
     base = config["manabi"]["base_url"]

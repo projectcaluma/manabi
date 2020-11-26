@@ -3,7 +3,7 @@ from datetime import datetime
 from email.utils import formatdate
 from http.cookies import SimpleCookie
 from inspect import getsource
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import base62  # type: ignore
 from attr import attrib, dataclass
@@ -70,5 +70,5 @@ def set_cookie(
     if info.secure:
         cookie[key]["secure"] = True
         cookie[key]["httponly"] = True
-    headers.append(str(cookie).split(": "))
+    headers.append(cast(Tuple[str, str], str(cookie).split(": ")))
     info.start_response(status, headers, exc_info)

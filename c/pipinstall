@@ -3,4 +3,4 @@
 set -e
 export PATH="/home/manabi/.local/bin:$PATH"
 pip install --user pipenv
-pipenv sync
+pipenv sync -d
