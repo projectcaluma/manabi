@@ -68,10 +68,10 @@ class ManabiProvider(FilesystemProvider):
         token: Token = environ["manabi.token"]
         dir_access = environ["manabi.dir_access"]
         if dir_access:
+            assert token.path
             path = f"/{str(token.path.parent)}"
         fp = self._loc_to_file_path(path, environ)
         if dir_access or Path(fp).is_dir():
-            assert token.path
             return ManabiFolderResource(path, environ, fp)
         else:
             path = token.path_as_url()

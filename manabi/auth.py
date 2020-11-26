@@ -54,7 +54,7 @@ class ManabiAuthenticator(BaseMiddleware):
         environ["REQUEST_URI"] = path
         environ["manabi.path"] = path
 
-        environ["wsgidav.auth.user_name"] = f"{path}|{id_[10:14]}"
+        environ["wsgidav.auth.user_name"] = f"{path.strip('/')}|{id_[10:14]}"
         environ["manabi.token"] = token
 
     def refresh(self, id_: str, info: AppInfo, token: Token, ttl: int):
@@ -73,6 +73,8 @@ class ManabiAuthenticator(BaseMiddleware):
         path_info = environ["PATH_INFO"]
         id_, _, suffix = path_info.strip("/").partition("/")
         suffix = suffix.strip("/")
+        # We need this because we replace PATH_INFO with token.path, so later
+        # we don't know if this was a directory access
         environ["manabi.dir_access"] = suffix == ""
         if not id_:
             return self.access_denied(start_response, "no token supplied")
