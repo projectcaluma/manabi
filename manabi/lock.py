@@ -12,6 +12,7 @@ class ManabiLockLockStorage(LockStorageDict):
     def create(self, path, lock):
         max_timeout = self.max_timeout
         timeout = lock.get("timeout")
+
         if not timeout:
             lock["timeout"] = max_timeout
         else:

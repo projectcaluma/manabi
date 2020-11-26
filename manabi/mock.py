@@ -70,9 +70,19 @@ def serve_document(
     key = Key.from_dictionary(config)
     path1 = Path("asdf.docx")
     url1 = Token(key, path1).as_url()
+    url1odt = f"{url1[:-5]}.odt"
     path2 = Path("nope.docx")
     url2 = Token(key, path2).as_url()
     base = config["manabi"]["base_url"]
+    script = """
+function copy_command(input) {
+  var copyText = document.getElementById(input);
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+  document.execCommand("copy");
+  alert("Copied the text: " + copyText.value);
+}
+"""
     body = f"""
 <!doctype html>
 
@@ -82,7 +92,9 @@ def serve_document(
 
   <title>WebDAV test page</title>
 </head>
-
+<script>
+{script}
+</script>
 <body>
     <h1>existing</h1>
     <h2>word link</h2>
@@ -91,6 +103,11 @@ def serve_document(
     <a href="webdav://{base}/dav/{url1}">{path1}</a>
     <h2>http link</h2>
     <a href="http://{base}/dav/{url1}">{path1}</a>
+    <h2>libreoffice command</h2>
+    LibreOffice does not support cookies so it is not a very good test and only LibreOffice 7+ works at all.
+    <a href="https://git.libreoffice.org/core/+/58b84caca87c893ac04f0b1399aeadc839a2f075%5E%21">Bug fix.</a>
+    <input type="text" value="libreoffice webdav://{base}/dav/{url1}" id="existing" size="115">
+    <button onclick="copy_command('existing')">Copy command</button>
     <h1>non-existing</h1>
     <h2>word link</h2>
     <a href="ms-word:ofe|u|http://{base}/dav/{url2}">{path2}</a>
