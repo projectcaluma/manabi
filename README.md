@@ -4,6 +4,10 @@ Manabi
 TODO
 ----
 
+* prevent save as?
+
+* lock time
+
 * report actually allowed method, eg no MOVE
 
 * test refresh

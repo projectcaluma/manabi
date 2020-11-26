@@ -27,50 +27,51 @@ class ManabiFolderResource(FolderResource):
             raise DAVError(HTTP_FORBIDDEN)
         return super().get_member(name)
 
-    # def create_empty_resource(self, name):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def create_empty_resource(self, name):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def create_collection(self, name):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def create_collection(self, name):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def delete(self):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def delete(self):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def copy_move_single(self, dest_path, is_move):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def copy_move_single(self, dest_path, is_move):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def support_recursive_move(self, dest_path):
-    #     return False
+    def support_recursive_move(self, dest_path):
+        return False
 
-    # def move_recursive(self, dest_path):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def move_recursive(self, dest_path):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def set_last_modified(self, dest_path, time_stamp, dry_run):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def set_last_modified(self, dest_path, time_stamp, dry_run):
+        raise DAVError(HTTP_FORBIDDEN)
 
 
 class ManabiFileResource(FileResource):
-    pass
-    # def delete(self):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def delete(self):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def copy_move_single(self, dest_path, is_move):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def copy_move_single(self, dest_path, is_move):
+        raise DAVError(HTTP_FORBIDDEN)
 
-    # def support_recursive_move(self, dest_path):
-    #     return False
+    def support_recursive_move(self, dest_path):
+        return False
 
-    # def move_recursive(self, dest_path):
-    #     raise DAVError(HTTP_FORBIDDEN)
+    def move_recursive(self, dest_path):
+        raise DAVError(HTTP_FORBIDDEN)
 
 
 class ManabiProvider(FilesystemProvider):
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
         token: Token = environ["manabi.token"]
-        fp = self._loc_to_file_path(path, environ)
-        if Path(fp).is_dir():
-            assert token.path
+        dir_access = environ["manabi.dir_access"]
+        if dir_access:
             path = f"/{str(token.path.parent)}"
+        fp = self._loc_to_file_path(path, environ)
+        if dir_access or Path(fp).is_dir():
+            assert token.path
             return ManabiFolderResource(path, environ, fp)
         else:
             path = token.path_as_url()
