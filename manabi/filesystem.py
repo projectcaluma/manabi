@@ -7,6 +7,7 @@ from wsgidav.fs_dav_provider import (  # type: ignore
     FilesystemProvider,
     FolderResource,
 )
+from wsgidav.lock_manager import LockManager
 
 from .token import Token
 

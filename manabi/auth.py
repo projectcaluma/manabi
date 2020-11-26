@@ -89,8 +89,10 @@ class ManabiAuthenticator(BaseMiddleware):
         if cookie:
             cookie = SimpleCookie(cookie)
             refresh = cookie.get(initial.ciphertext)
-            if refresh and refresh.refresh(config.ttl) == State.valid:
-                return self.refresh(id_, info, refresh, ttl)
+            if refresh and refresh.value:
+                refresh = Token.from_ciphertext(config.key, refresh.value)
+                if refresh.refresh(config.ttl) == State.valid:
+                    return self.refresh(id_, info, refresh, ttl)
 
         check = initial.initial(config.ttl)
         if initial.initial(config.ttl) == State.valid:

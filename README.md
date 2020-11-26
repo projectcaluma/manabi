@@ -4,6 +4,8 @@ Manabi
 TODO
 ----
 
+* cookie checks: initial, refresh
+
 * prevent save as?
 
 * lock time

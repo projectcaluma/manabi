@@ -16,6 +16,7 @@ from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
+from .lock import ManabiLockLockStorage
 from .token import Key, Token, now
 from .util import get_rfc1123_time
 
@@ -36,10 +37,12 @@ def get_server_dir():
 
 
 def get_config(server_dir: Path):
+    refresh = 60
     return {
         "host": "0.0.0.0",
         "port": 8080,
         "mount_path": "/dav",
+        "lock_manager": ManabiLockLockStorage(refresh),
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
@@ -54,8 +57,8 @@ def get_config(server_dir: Path):
         "enable_loggers": ["lock_manager", "request_resolver"],
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
-            "refresh": 600,
-            "initial": 600,
+            "refresh": refresh,
+            "initial": 60,
             "base_url": "192.168.1.116:8080",
         },
     }

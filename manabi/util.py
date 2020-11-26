@@ -70,4 +70,5 @@ def set_cookie(
     if info.secure:
         cookie[key]["secure"] = True
         cookie[key]["httponly"] = True
+    headers.append(str(cookie).split(": "))
     info.start_response(status, headers, exc_info)
