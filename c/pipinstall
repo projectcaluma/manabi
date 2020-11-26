@@ -2,5 +2,5 @@
 
 set -e
 export PATH="/home/manabi/.local/bin:$PATH"
-pip install --user pipenv
+pip install --user -U pipenv
 pipenv sync -d
