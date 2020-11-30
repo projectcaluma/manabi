@@ -2,5 +2,5 @@
 
 set -e
 
-docker build -t acr.run/camac-ng/manabi .
+docker build -f Dockerfile.build -t acr.run/camac-ng/manabi .
 docker push acr.run/camac-ng/manabi
