@@ -1,0 +1,35 @@
+before_script:
+  - source /etc/profile
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+
+image_build:
+  stage: build
+  script: ./c/build
+  only:
+    refs:
+      - master
+    changes:
+      - Dockerfile
+      - Pipfile
+      - Pipfile.lock
+      - setup.cfg
+      - setup.py
+      - MANIFEST.in
+
+pytest:
+  stage: test
+  script: ./c/test pytest manabi
+
+flake8:
+  stage: test
+  script: ./c/test flake8 manabi
+
+mypy:
+  stage: test
+  script: ./c/test mypy manabi
