@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -e
+
+docker build -t test .
+docker run -ti test pipenv run "$@"

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+docker build --target builder -t acr.run/camac-ng/manabi .
+docker login -u gitlab-ci-token -p $CI_JOB_TOKEN acr.run
+docker push acr.run/camac-ng/manabi
