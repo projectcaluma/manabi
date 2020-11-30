@@ -2,5 +2,6 @@
 
 set -e
 
-docker build -t test .
-docker run -ti test pipenv run "$@"
+docker pull acr.run/camac-ng/manabi
+docker build -f Dockerfile.test -t test .
+docker run test pipenv run "$@"

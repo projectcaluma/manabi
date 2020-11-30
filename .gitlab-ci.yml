@@ -1,5 +1,6 @@
 before_script:
   - source /etc/profile
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN acr.run
 
 services:
   - docker:dind
