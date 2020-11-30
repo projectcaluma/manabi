@@ -1,6 +1,37 @@
 Manabi
 ======
 
+Install
+-------
+
+Make sure libsodium exists on the system, for example execute:
+
+```bash
+apk add --no-cache libsodium
+apt-get install -y libsodium
+```
+
+Config
+------
+
+Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
+shared between the caluma/alexandria backend and the WebDAV server.
+
+Dev
+===
+
+When changing dependencies or the build image, ie any of these files:
+
+* Dockerfile
+* Pipfile
+* Pipfile.lock
+* setup.cfg
+* setup.py
+* MANIFEST.in
+
+You need to merge the changes to master first, because the container can only be
+published by a master build.
+
 TODO
 ----
 
@@ -22,22 +53,6 @@ TODO later
 ----------
 
 * use has_a instead of is_a to harden against implementation changes
-
-Install
--------
-
-Make sure libsodium exists on the system, for example execute:
-
-```bash
-apk add --no-cache libsodium
-apt-get install -y libsodium
-```
-
-Config
-------
-
-Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
-shared between the caluma/alexandria backend and the WebDAV server.
 
 Longterm TODO
 -------------
