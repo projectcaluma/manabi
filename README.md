@@ -22,6 +22,8 @@ Dev
 
 When changing dependencies or the build image, ie any of these files:
 
+* c/install
+* c/pipinstall
 * Dockerfile
 * Pipfile
 * Pipfile.lock

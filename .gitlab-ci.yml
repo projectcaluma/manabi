@@ -17,6 +17,8 @@ image_build:
       - master
       - merge_requests
     changes:
+      - c/install
+      - c/pipinstall
       - Dockerfile
       - Pipfile
       - Pipfile.lock
