@@ -4,11 +4,14 @@ apk add --no-cache git
 MERGE_BASE="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
 check_increment() {
     if [ "$MERGE_BASE" != "" ]; then
-        git fetch origin
-        git diff "origin/$MERGE_BASE" | grep -q '+MANABI_IMAGE_VERSION='
+        upstream="$(echo $CI_REPOSITORY_URL | sed "s:$CI_MERGE_REQUEST_SOURCE_PROJECT_PATH:$CI_MERGE_REQUEST_PROJECT_PATH:")"
+        git remote remove upstream
+        git remote add upstream "$upstream"
+        git fetch upstream
+        git diff "upstream/$MERGE_BASE" | grep -q '^+MANABI_IMAGE_VERSION='
         return $?
     else
-        git diff $CI_COMMIT_BEFORE_SHA | grep -q '+MANABI_IMAGE_VERSION='
+        git diff $CI_COMMIT_BEFORE_SHA | grep -q '^+MANABI_IMAGE_VERSION='
         return $?
     fi
 }
