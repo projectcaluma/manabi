@@ -7,6 +7,12 @@ from unittest import mock as unitmock
 import pytest  # type: ignore
 
 from . import mock
+from .log import verbose_logging
+
+
+@pytest.fixture(scope="session", autouse=True)
+def enable_verbose_logging() -> None:
+    verbose_logging()
 
 
 @pytest.fixture()

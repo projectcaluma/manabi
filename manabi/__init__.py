@@ -14,12 +14,9 @@ def keygen() -> None:
 
 
 def setup_log() -> None:
-    from wsgidav.util import init_logging  # type: ignore
+    from .log import verbose_logging
 
-    from .mock import get_config, get_server_dir
-
-    config = get_config(get_server_dir())
-    init_logging(config)
+    verbose_logging()
 
 
 setup_log()
