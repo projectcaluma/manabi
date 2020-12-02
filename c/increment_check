@@ -1,0 +1,19 @@
+#!/bin/sh
+
+apk add --no-cache git
+MERGE_BASE="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+check_increment() {
+    if [ "$MERGE_BASE" != "" ]; then
+        git fetch origin
+        git diff "origin/$MERGE_BASE" | grep -q '+MANABI_IMAGE_VERSION='
+        return $?
+    else
+        git diff $CI_COMMIT_BEFORE_SHA | grep -q '+MANABI_IMAGE_VERSION='
+        return $?
+    fi
+}
+# A quick check that the user didn't forget to increment the version
+if ! check_increment; then
+    echo Please increment MANABI_IMAGE_VERSION
+    exit 1
+fi
