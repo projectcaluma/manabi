@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-
 mkdir /home/manabi
 chown manabi:manabi /home/manabi
 chown -R manabi:manabi /app
