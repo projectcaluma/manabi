@@ -11,12 +11,3 @@ def keygen() -> None:
 
     with open("/dev/random", "rb") as f:
         print(to_string(f.read(32)))
-
-
-def setup_log() -> None:
-    from .log import verbose_logging
-
-    verbose_logging()
-
-
-setup_log()
