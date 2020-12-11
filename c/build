@@ -2,13 +2,12 @@
 
 . c/increment_check
 
-set -e
 . c/config
 IMAGE_BASE="acr.run/camac-ng/manabi"
 if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
     VERSION=$MANABI_IMAGE_VERSION
-    docker build -f Dockerfile.build -t $IMAGE_BASE:v$VERSION .
+    docker build -f Dockerfile.build -t $IMAGE_BASE:v$VERSION . || exit 1
     docker push $IMAGE_BASE:v$VERSION
 else
-    docker build -f Dockerfile.build -t $IMAGE_BASE:p$CI_PIPELINE_ID .
+    docker build -f Dockerfile.build -t $IMAGE_BASE:p$CI_PIPELINE_ID . || exit 1
 fi

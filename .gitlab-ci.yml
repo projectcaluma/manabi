@@ -19,7 +19,9 @@ image_build:
     changes:
       - c/install
       - c/pipinstall
+      - c/config
       - Dockerfile
+      - Dockerfile.build
       - Pipfile
       - Pipfile.lock
       - setup.cfg

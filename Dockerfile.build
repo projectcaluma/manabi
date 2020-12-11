@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM acr.run/camac-ng/camac-ng/python:3.7-slim
 RUN useradd manabi
 ENV PATH="/home/manabi/.local/bin:${PATH}"
 WORKDIR /app
