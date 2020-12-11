@@ -47,7 +47,6 @@ def get_config(server_dir: Path):
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
-        "verbose": 5,
         "middleware_stack": [
             WsgiDavDebugFilter,
             ErrorPrinter,
@@ -55,7 +54,6 @@ def get_config(server_dir: Path):
             WsgiDavDirBrowser,
             RequestResolver,
         ],
-        "enable_loggers": ["lock_manager", "request_resolver"],
         "manabi": {
             "key": "ur7Q80cCgjDsrciXbuRKLF83xqWDdzGhXaPwpwz7boG",
             "refresh": refresh,
