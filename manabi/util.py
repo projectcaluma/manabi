@@ -70,5 +70,5 @@ def set_cookie(
     if info.secure:
         cookie[key]["secure"] = True
         cookie[key]["httponly"] = True
-    headers.append(cast(Tuple[str, str], str(cookie).split(": ")))
+    headers.append(cast(Tuple[str, str], tuple(str(cookie).split(": "))))
     info.start_response(status, headers, exc_info)
