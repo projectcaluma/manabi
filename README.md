@@ -8,7 +8,7 @@ Make sure libsodium exists on the system, for example execute:
 
 ```bash
 apk add --no-cache libsodium
-apt-get install -y libsodium
+apt-get install -y libsodium23
 ```
 
 Config
@@ -36,34 +36,11 @@ published by a master build.
 
 !! Do not forget to increment MANABI_IMAGE_VERSION in ./c/config
 
-TODO
-----
-
-* cookie checks: initial, refresh
-
-* prevent save as?
-
-* lock time
-
-* report actually allowed method, eg no MOVE
-
-* test refresh
-
-* test cookie timeout
-
-* test request-based token timeout
 
 TODO later
 ----------
 
 * use has_a instead of is_a to harden against implementation changes
-
-Longterm TODO
--------------
-
-Change Dict[...] to dict[...] once mypy supports that. Python 3.7 already
-supports it using `from __future__ import annotations`. The same is true for any
-builtin type. See PEP 585.
 
 Some ways to plug into wsgidav
 ------------------------------
