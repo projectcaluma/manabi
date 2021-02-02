@@ -41,7 +41,8 @@ published by a master build.
 TODO later
 ----------
 
-* use has_a instead of is_a to harden against implementation changes
+* use has_a instead of is_a when extending wsgi-dav classes to harden against
+  implementation changes
 
 Some ways to plug into wsgidav
 ------------------------------
