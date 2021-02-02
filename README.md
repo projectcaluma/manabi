@@ -44,36 +44,8 @@ TODO later
 * use has_a instead of is_a when extending wsgi-dav classes to harden against
   implementation changes
 
-Some ways to plug into wsgidav
-------------------------------
-
-Python code:
-
-```python
-from wsgidav.dc.simple_dc import SimpleDomainController
-from wsgidav.fs_dav_provider import FilesystemProvider
-from wsgidav.middleware import BaseMiddleware
-
-
-class ManabiAuthenticator(BaseMiddleware):
-    def __call__(self, environ, start_response):
-        print("hello middleware")
-        return self.next_app(environ, start_response)
-
-
-class ManabiDomainCotroller(SimpleDomainController):
-    def require_authentication(self, realm, environ):
-        print("hello controller")
-        return False
-
-
-class ManabiProvider(FilesystemProvider):
-    def get_resource_inst(self, path, environ):
-        print("hello provider")
-        return super().get_resource_inst(path, environ)
-```
-
-Config:
+Config
+------
 
 ```python
 config = {
