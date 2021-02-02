@@ -20,6 +20,10 @@ _error_message_403 = """
 
 
 class ManabiAuthenticator(BaseMiddleware):
+    # Instead of accepting an override for HTTPAuthenticator as for everything else,
+    # wsgidav just expects a class extending HTTPAuthenticator in the middleware_stack.
+    # In it also accesses the domain_controller with out check if it exists in some debug code.
+    # https://github.com/mar10/wsgidav/pull/204
     def get_domain_controller(self) -> Any:
         return MagicMock()
 
