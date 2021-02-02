@@ -17,6 +17,7 @@ image_build:
       - master
       - merge_requests
     changes:
+      - c/build
       - c/install
       - c/pipinstall
       - c/config
