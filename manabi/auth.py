@@ -72,6 +72,15 @@ class ManabiAuthenticator(BaseMiddleware):
     def __call__(
         self, environ: Dict[str, Any], start_response: Callable
     ) -> List[bytes]:
+        """__call__ is the entry-point of a wsgi-middleware.
+
+        The method checks if the token is valid, so wsgi-dav can serve the document.
+        It also refreshes the token by setting a new token in a cookie.
+
+        Middlwares and wsgi-handlers are identical. Middlewares need to wrap
+        start_response with a closure, if they want to add headers.
+        https://www.python.org/dev/peps/pep-3333/
+        """
         info = AppInfo(start_response, environ, self.manabi_secure())
         config = Config.from_dictionary(environ["wsgidav.config"])
         path_info = environ["PATH_INFO"]
