@@ -60,6 +60,9 @@ def get_config(server_dir: Path):
             "initial": 600,
             "base_url": base_url,
         },
+        "hotfixes": {
+            "re_encode_path_info": False,
+        },
     }
 
 
