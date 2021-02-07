@@ -19,3 +19,7 @@ class ManabiLockLockStorage(LockStorageDict):
             if timeout > max_timeout:
                 lock["timeout"] = max_timeout
         return super().create(path, lock)
+
+    def get(self, token):
+        res = super().get(token)
+        return res
