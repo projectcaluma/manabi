@@ -32,7 +32,8 @@ def http(method, url, token=None, data=None):
             req.data = lock_req
     if token:
         req.add_header("Lock-Token", token)
-        req.add_header("If", f"<{url}> ({token})")
+        ifstr = f"<{url}> (<{token}>)"
+        req.add_header("If", ifstr)
     req.get_method = lambda: method
     res = opener.open(req)
     try:
@@ -68,8 +69,11 @@ def test_lock_two_server(server_dir):
         config2 = mock.get_config(server_dir, storage)
         config2["port"] = 8081
         with run_server(config), run_server(config2):
+            expect = str(time.time()).encode("UTF-8")
             req = mock.make_req(config)
-            req2 = mock.make_req(config2)
+            req2 = req.replace(
+                "http://localhost:8080/dav/", "http://localhost:8081/dav/"
+            )
             assert requests.get(req).status_code == 200
             assert requests.get(req2).status_code == 200
             assert requests.get(req).status_code == 200
@@ -80,3 +84,8 @@ def test_lock_two_server(server_dir):
             # Switch server
             res, xml = http("LOCK", req2, token=token)
             assert res.status == 200
+            res, _ = http("PUT", req2, token=token, data=expect)
+            assert res.status == 204
+            res, data = http("GET", req2, token=token)
+            assert res.status == 200
+            assert data == expect
