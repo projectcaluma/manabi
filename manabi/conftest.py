@@ -16,13 +16,19 @@ def enable_verbose_logging() -> None:
 
 
 @pytest.fixture()
+def lock_storage():
+    with mock.lock_storage() as storage:
+        yield storage
+
+
+@pytest.fixture()
 def server_dir() -> Path:
     return mock.get_server_dir()
 
 
 @pytest.fixture()
-def config(server_dir) -> Dict[str, Any]:
-    return mock.get_config(server_dir)
+def config(server_dir, lock_storage) -> Dict[str, Any]:
+    return mock.get_config(server_dir, lock_storage)
 
 
 @pytest.fixture()

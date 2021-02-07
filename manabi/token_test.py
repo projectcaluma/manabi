@@ -109,12 +109,9 @@ def test_token_creation(config):
     assert token.check(-10) == State.invalid
 
 
-def get_config() -> dict:
-    return mock.get_config(mock.get_server_dir())
-
-
 def token_roundtrip(tamper: bool, expire: bool, path: str):
-    key = Config.from_dictionary(get_config()).key.data
+    with mock.with_config() as config:
+        key = Config.from_dictionary(config).key.data
     ttl = None
     if expire:
         ttl = 1
@@ -148,7 +145,8 @@ def test_token_roundtrip_hyp(tamper: bool, expire: bool, path: str):
 
 @given(binary(min_size=1, max_size=32))
 def test_branca_roundtrip(string: bytes):
-    key = get_config()["manabi"]["key"]
+    with mock.with_config() as config:
+        key = config["manabi"]["key"]
     f = Branca(from_string(key))
     res = f.decode(f.encode(string))
     assert res == string
@@ -156,7 +154,8 @@ def test_branca_roundtrip(string: bytes):
 
 def other_impl_decode(string: bytes):
     with mock.branca_impl():
-        key = get_config()["manabi"]["key"]
+        with mock.with_config() as config:
+            key = config["manabi"]["key"]
         f = Branca(from_string(key))
         ct = f.encode(string)
         proc = run(["cargo", "run", "decode", key, ct], stdout=PIPE, check=True)

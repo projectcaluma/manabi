@@ -21,10 +21,17 @@ from .token import Key, Token, now
 from .util import get_rfc1123_time
 
 _servers: Dict[Tuple[str, int], wsgi.Server] = dict()
-_server_dir = Path("/tmp/296fe33fcca")
+_server_dir = Path("/tmp/296fe33fcca.dir")
+_lock_storage = Path("/tmp/296fe33fcca.lock")
 _module_dir = Path(__file__).parent
 _test_file1 = Path(_module_dir, "data", "asdf.docx")
 _test_file2 = Path(_module_dir, "data", "qwert.docx")
+
+
+@contextmanager
+def with_config() -> Generator[dict, None, None]:
+    with lock_storage() as storage:
+        yield get_config(get_server_dir(), storage)
 
 
 def get_server_dir():
@@ -36,14 +43,14 @@ def get_server_dir():
     return _server_dir
 
 
-def get_config(server_dir: Path):
+def get_config(server_dir: Path, lock_storage: Path):
     refresh = 600
     base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8080"
     return {
         "host": "0.0.0.0",
         "port": 8080,
         "mount_path": "/dav",
-        "lock_manager": ManabiLockLockStorage(refresh),
+        "lock_manager": ManabiLockLockStorage(refresh, lock_storage),
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
@@ -158,6 +165,15 @@ def get_server(config: Dict[str, Any]) -> wsgi.Server:
 
 def remove_server(server: wsgi.Server):
     _servers.pop(server._manabi_id)
+
+
+@contextmanager
+def lock_storage():
+    try:
+        _lock_storage.unlink()
+    except FileNotFoundError:
+        pass
+    yield Path(_lock_storage)
 
 
 @contextmanager
