@@ -170,14 +170,15 @@ def shift_now(offset: int) -> Generator[unitmock.MagicMock, None, None]:
 
 @contextmanager
 def run_server(config: Dict[str, Any]) -> Generator[None, None, None]:
-    global _server
     server = get_server(config)
     thread = Thread(target=partial(server.serve))
     thread.start()
-    yield
-    server.stop()
-    thread.join()
-    remove_server(server)
+    try:
+        yield
+    finally:
+        server.stop()
+        thread.join()
+        remove_server(server)
 
 
 @contextmanager
