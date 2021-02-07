@@ -50,7 +50,7 @@ def test_lock(config: Dict[str, Any]):
     with run_server(config):
         expect = str(time.time()).encode("UTF-8")
         req = mock.make_req(config)
-        assert requests.get(req) == 200
+        assert requests.get(req).status_code == 200
         res, xml = http("LOCK", req)
         token = get_lock_token(xml)
         assert res.status == 200
