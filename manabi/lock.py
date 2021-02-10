@@ -1,3 +1,5 @@
+import fcntl
+from contextlib import contextmanager
 from pathlib import Path
 
 from sqlitedict import SqliteDict  # type: ignore
@@ -13,9 +15,19 @@ class ManabiLockLockStorage(LockStorageDict):
         self.max_timeout = refresh / 2
         self._storage = storage
 
+    @contextmanager
+    def lock_file(self):
+        fd = self._lock_file.fileno()
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            yield
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+
     def open(self):
         _logger.debug(f"open({self._storage})")
         self._dict = SqliteDict(self._storage, autocommit=True)
+        self._lock_file = open(f"{self._storage}.lock", "wb+")
 
     def clear(self):
         _logger.debug("clear()")
@@ -33,8 +45,11 @@ class ManabiLockLockStorage(LockStorageDict):
         try:
             con = self._dict
             self._dict = None
+            lock = self._lock_file
+            self._lock_file = None
             if con:
                 con.close()
+                lock.close()
         finally:
             self._lock.release()
 
@@ -47,8 +62,13 @@ class ManabiLockLockStorage(LockStorageDict):
         else:
             if timeout > max_timeout:
                 lock["timeout"] = max_timeout
-        return super().create(path, lock)
+        with self.lock_file():
+            return super().create(path, lock)
 
-    def get(self, token):
-        res = super().get(token)
-        return res
+    def refresh(self, token, timeout):
+        with self.lock_file():
+            return super().refresh(token, timeout)
+
+    def delete(self, token):
+        with self.lock_file():
+            return super().delete(token)
