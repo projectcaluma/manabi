@@ -156,12 +156,6 @@
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.15.0"
         },
-        "sqlitedict": {
-            "hashes": [
-                "sha256:2affcc301aacd4da7511692601ecbde392294205af418498f7d6d3ec0dbcad56"
-            ],
-            "version": "==1.7.0"
-        },
         "wsgidav": {
             "hashes": [
                 "sha256:07eaf34439497ae571763842b3109842e4421bc2c7fc11090e150a75ce3cbbfa",
@@ -293,11 +287,11 @@
         },
         "hypothesis": {
             "hashes": [
-                "sha256:47673d3c0cb87055f5b4d322d3d16a7556ae5962e9677aa98d6f5503ffd74f7a",
-                "sha256:4da042e6df01417308d389afa8769de0a762b827476f431eb7848852f4a02647"
+                "sha256:32c1706ee12a493befb5192e91a74b355fc2d6b70ce89e21c5b54e24713fc821",
+                "sha256:c16fbde26b65c98a2464c48209b066c2f6dab5e8e38acd9d959021eb8d58b6c0"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==6.1.1"
+            "version": "==6.2.0"
         },
         "idna": {
             "hashes": [
@@ -327,16 +321,16 @@
                 "sha256:c729845434366216d320e936b8ad6f9d681aab72dc7cbc2d51bedc3582f3ad1e",
                 "sha256:fff4f0c04e1825522ce6949973e83110a6e907750cd92d128b0d14aaaadbffdc"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4.0'",
+            "markers": "python_version >= '3.6' and python_version < '4'",
             "version": "==5.7.0"
         },
         "jaraco.functools": {
             "hashes": [
-                "sha256:7de095757115ebd370ddb14659b48ca83fcd075e78e0b3c575041c0edbf718e0",
-                "sha256:9e2caddca5620bb682d29b238d46719d062eb2aeafc0cf63043f04c8cd9fd8a7"
+                "sha256:8f60a00314a5989977ebd38b49ad09e2381ddf4c9340152f9b9a651ff12d5e34",
+                "sha256:e11a692db72f9e03bbfc5eae30e8670d1fc7f8c9610cd1c20ebff03beb0376e1"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==3.1.0"
+            "version": "==3.2.0"
         },
         "jedi": {
             "hashes": [
@@ -432,11 +426,11 @@
         },
         "more-itertools": {
             "hashes": [
-                "sha256:8e1a2a43b2f2727425f2b5839587ae37093f19153dc26c0927d1048ff6557330",
-                "sha256:b3a9005928e5bed54076e6e549c792b306fddfe72b2d1d22dd63d42d5d3899cf"
+                "sha256:5652a9ac72209ed7df8d9c15daf4e1aa0e3d2ccd3c87f8265a0673cd9cbc9ced",
+                "sha256:c5d6da9ca3ff65220c3bfd2a8db06d698f05d4d2b9be57e1deb2be5a45019713"
             ],
             "markers": "python_version >= '3.5'",
-            "version": "==8.6.0"
+            "version": "==8.7.0"
         },
         "mypy": {
             "hashes": [
@@ -701,12 +695,6 @@
             ],
             "version": "==2.3.0"
         },
-        "sqlitedict": {
-            "hashes": [
-                "sha256:2affcc301aacd4da7511692601ecbde392294205af418498f7d6d3ec0dbcad56"
-            ],
-            "version": "==1.7.0"
-        },
         "testfixtures": {
             "hashes": [
                 "sha256:5ec3a0dd6f71cc4c304fbc024a10cc293d3e0b852c868014b9f233203e149bda",
@@ -798,7 +786,7 @@
                 "sha256:1b465e494e3e0d8939b50680403e3aedaa2bc434b7d5af64dfd3c958d7f5ae80",
                 "sha256:de3eedaad74a2683334e282005cd8d7f22f4d55fa690a2a1020a416cb0a47e73"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
             "version": "==1.26.3"
         },
         "wmctrl": {
