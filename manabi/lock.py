@@ -1,8 +1,8 @@
 import fcntl
+import shelve
 from contextlib import contextmanager
 from pathlib import Path
 
-from sqlitedict import SqliteDict  # type: ignore
 from wsgidav.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
 
@@ -16,42 +16,52 @@ class ManabiLockLockStorage(LockStorageDict):
         self._storage = storage
 
     @contextmanager
-    def lock_file(self):
+    def get_shelve(self):
         fd = self._lock_file.fileno()
         try:
-            fcntl.flock(fd, fcntl.LOCK_EX)
-            yield
+            self._lock.acquire_write()
+            try:
+                if self._semaphore == 0:
+                    fcntl.flock(fd, fcntl.LOCK_EX)
+                    self._dict = shelve.open(str(self._storage))
+                self._semaphore += 1
+                yield
+            finally:
+                self._semaphore -= 1
+                if self._semaphore == 0:
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+                    self._dict.close()
+                    self._dict = None
         finally:
-            fcntl.flock(fd, fcntl.LOCK_UN)
+            self._lock.release()
 
     def open(self):
         _logger.debug(f"open({self._storage})")
-        self._dict = SqliteDict(self._storage, autocommit=True)
         self._lock_file = open(f"{self._storage}.lock", "wb+")
-
-    def clear(self):
-        _logger.debug("clear()")
-        self._lock.acquire_write()
-        try:
-            self.close()
-            self._storage.unlink()
-            self.open()
-        finally:
-            self._lock.release()
+        self._semaphore = 0
 
     def close(self):
         _logger.debug("close()")
         self._lock.acquire_write()
         try:
-            con = self._dict
-            self._dict = None
             lock = self._lock_file
             self._lock_file = None
-            if con:
-                con.close()
-                lock.close()
+            lock.close()
+            self._semaphore = 0
         finally:
             self._lock.release()
+
+    def clear(self):
+        _logger.debug("clear()")
+        self._lock.acquire_write()
+        try:
+            self._storage.unlink()
+        finally:
+            self._lock.release()
+
+    def get(self, token):
+        with self.get_shelve():
+            return super().get(token)
 
     def create(self, path, lock):
         max_timeout = self.max_timeout
@@ -62,13 +72,19 @@ class ManabiLockLockStorage(LockStorageDict):
         else:
             if timeout > max_timeout:
                 lock["timeout"] = max_timeout
-        with self.lock_file():
+        with self.get_shelve():
             return super().create(path, lock)
 
     def refresh(self, token, timeout):
-        with self.lock_file():
+        with self.get_shelve():
             return super().refresh(token, timeout)
 
     def delete(self, token):
-        with self.lock_file():
+        with self.get_shelve():
             return super().delete(token)
+
+    def get_lock_list(self, path, include_root, include_children, token_only):
+        with self.get_shelve():
+            return super().get_lock_list(
+                path, include_root, include_children, token_only
+            )
