@@ -7,13 +7,16 @@ def verbose_logging() -> None:
         {
             "verbose": 5,
             "enable_loggers": [
+                "manabi.lock",
                 "lock_manager",
                 "lock_storage",
                 "request_resolver",
                 "request_server",
                 "http_authenticator",
                 "property_manager",
-                "fs_dav_provider" "dir_browser" "server",
+                "fs_dav_provider",
+                "dir_browser",
+                "server",
             ],
         }
     )
