@@ -24,6 +24,9 @@ class ManabiLockLockStorage(LockStorageDict):
                 if self._semaphore == 0:
                     fcntl.flock(fd, fcntl.LOCK_EX)
                     self._dict = shelve.open(str(self._storage))
+                    _logger.debug(
+                        f"get_shelve({self._storage}): {len(self._dict)} locks"
+                    )
                 self._semaphore += 1
                 yield
             finally:
