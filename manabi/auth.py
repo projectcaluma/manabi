@@ -58,7 +58,7 @@ class ManabiAuthenticator(BaseMiddleware):
         environ["REQUEST_URI"] = path
         environ["manabi.path"] = path
 
-        environ["wsgidav.auth.user_name"] = f"{path.strip('/')}|{id_[10:14]}"
+        environ["wsgidav.auth.user_name"] = f"{path.strip('/')}|{id_[10:18]}"
         environ["manabi.token"] = token
 
     def refresh(self, id_: str, info: AppInfo, token: Token, ttl: int):

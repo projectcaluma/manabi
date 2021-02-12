@@ -15,14 +15,11 @@ from hypothesis.strategies import (  # type: ignore
 from . import mock
 
 
-def get_config() -> dict:
-    return mock.get_config(mock.get_server_dir())
-
-
 @pytest.fixture(scope="module")
 def mod_server() -> Generator:
-    with mock.run_server(get_config()):
-        yield
+    with mock.with_config() as config:
+        with mock.run_server(config):
+            yield
 
 
 def dumb_force(url):
@@ -77,8 +74,9 @@ def force_with_token(url, past, do_quote=False, sep="/"):
     shift = 1200
     if past:
         shift = -1200
-    with mock.shift_now(shift):
-        t = mock.make_token(get_config())
+    with mock.with_config() as config:
+        with mock.shift_now(shift):
+            t = mock.make_token(config)
     for i, v in enumerate(url):
         if v is None:
             if sep == "/":

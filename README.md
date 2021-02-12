@@ -101,6 +101,10 @@ Release notes
 0.2
 ---
 
+* ManabiLockLockStorage takes `storage: Path` as argument, pointing to the
+  shared lock-storage. ManabiLockLockStorage will store the locks as
+  sqlite-database. In the future we might use memcache or some other method.
+
 * Users should add
 
 ```python

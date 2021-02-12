@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, Dict, Generator, Optional
+from typing import Any, Callable, Dict, Generator, Optional, Tuple
 from unittest import mock as unitmock
 
 from cheroot import wsgi  # type: ignore
@@ -20,11 +20,18 @@ from .lock import ManabiLockLockStorage
 from .token import Key, Token, now
 from .util import get_rfc1123_time
 
-_server: Optional[wsgi.Server] = None
-_server_dir = Path("/tmp/296fe33fcca")
+_servers: Dict[Tuple[str, int], wsgi.Server] = dict()
+_server_dir = Path("/tmp/296fe33fcca.dir")
+_lock_storage = Path("/tmp/296fe33fcca.lock")
 _module_dir = Path(__file__).parent
 _test_file1 = Path(_module_dir, "data", "asdf.docx")
 _test_file2 = Path(_module_dir, "data", "qwert.docx")
+
+
+@contextmanager
+def with_config() -> Generator[dict, None, None]:
+    with lock_storage() as storage:
+        yield get_config(get_server_dir(), storage)
 
 
 def get_server_dir():
@@ -36,14 +43,14 @@ def get_server_dir():
     return _server_dir
 
 
-def get_config(server_dir: Path):
+def get_config(server_dir: Path, lock_storage: Path):
     refresh = 600
     base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8080"
     return {
         "host": "0.0.0.0",
         "port": 8080,
         "mount_path": "/dav",
-        "lock_manager": ManabiLockLockStorage(refresh),
+        "lock_manager": ManabiLockLockStorage(refresh, lock_storage),
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
@@ -133,9 +140,10 @@ function copy_command(input) {
     return [body]
 
 
-def get_server(config: Dict[str, Any]):
-    global _server
-    if not _server:
+def get_server(config: Dict[str, Any]) -> wsgi.Server:
+    bind_addr = (config["host"], config["port"])
+    server = _servers.get(bind_addr)
+    if not server:
         dav_app = WsgiDAVApp(config)
 
         path_map = {
@@ -144,13 +152,28 @@ def get_server(config: Dict[str, Any]):
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)
         server_args = {
-            "bind_addr": (config["host"], config["port"]),
+            "bind_addr": bind_addr,
             "wsgi_app": dispatch,
         }
 
-        _server = wsgi.Server(**server_args)
-        _server.prepare()
-    return _server
+        server = wsgi.Server(**server_args)
+        server.prepare()
+        _servers[bind_addr] = server
+        server._manabi_id = bind_addr
+    return server
+
+
+def remove_server(server: wsgi.Server):
+    _servers.pop(server._manabi_id)
+
+
+@contextmanager
+def lock_storage():
+    try:
+        _lock_storage.unlink()
+    except FileNotFoundError:
+        pass
+    yield Path(_lock_storage)
 
 
 @contextmanager
@@ -163,14 +186,15 @@ def shift_now(offset: int) -> Generator[unitmock.MagicMock, None, None]:
 
 @contextmanager
 def run_server(config: Dict[str, Any]) -> Generator[None, None, None]:
-    global _server
     server = get_server(config)
     thread = Thread(target=partial(server.serve))
     thread.start()
-    yield
-    server.stop()
-    thread.join()
-    _server = None
+    try:
+        yield
+    finally:
+        server.stop()
+        thread.join()
+        remove_server(server)
 
 
 @contextmanager
@@ -189,6 +213,10 @@ def make_token(config: Dict[str, Any], override_path: Optional[Path] = None) -> 
     return Token(key, path)
 
 
-def make_req(config: Dict[str, Any], override_path: Optional[Path] = None) -> str:
+def make_req(
+    config: Dict[str, Any],
+    override_path: Optional[Path] = None,
+) -> str:
     t = make_token(config, override_path)
-    return f"http://localhost:8080/dav/{t.as_url()}"
+    port = config["port"]
+    return f"http://localhost:{port}/dav/{t.as_url()}"

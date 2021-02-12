@@ -1,10 +1,10 @@
 if __name__ == "__main__":
     # This needs dev-requirements
     from .log import verbose_logging
-    from .mock import get_config, get_server, get_server_dir
+    from .mock import get_server, with_config
 
-    config = get_config(get_server_dir())
-    config["manabi"]["secure"] = False
-    verbose_logging()
-    server = get_server(config)
-    server.serve()
+    with with_config() as config:
+        config["manabi"]["secure"] = False
+        verbose_logging()
+        server = get_server(config)
+        server.serve()
