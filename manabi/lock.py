@@ -32,9 +32,9 @@ class ManabiLockLockStorage(LockStorageDict):
             finally:
                 self._semaphore -= 1
                 if self._semaphore == 0:
-                    fcntl.flock(fd, fcntl.LOCK_UN)
                     self._dict.close()
                     self._dict = None
+                    fcntl.flock(fd, fcntl.LOCK_UN)
         finally:
             self._lock.release()
 
