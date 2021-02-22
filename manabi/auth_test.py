@@ -3,7 +3,7 @@ from urllib.parse import quote
 
 import pytest
 import requests
-from hypothesis import example, given  # type: ignore
+from hypothesis import assume, example, given  # type: ignore
 from hypothesis.strategies import (  # type: ignore
     binary,
     booleans,
@@ -66,6 +66,7 @@ def test_structured_binary_force(mod_server, url):
 
 @given(lists(binary()))
 def test_structured_quote_force(mod_server, url):
+    assume(url != b"..")
     url = [quote(x) for x in url]
     structured_force(url)
 
