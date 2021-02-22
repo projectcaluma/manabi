@@ -17,6 +17,7 @@ from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
 from .lock import ManabiLockLockStorage
+from .log import HeaderLogger
 from .token import Key, Token, now
 from .util import get_rfc1123_time
 
@@ -55,6 +56,7 @@ def get_config(server_dir: Path, lock_storage: Path):
             "/": ManabiProvider(server_dir),
         },
         "middleware_stack": [
+            HeaderLogger,
             WsgiDavDebugFilter,
             ErrorPrinter,
             ManabiAuthenticator,
