@@ -8,7 +8,7 @@ Make sure libsodium exists on the system, for example execute:
 
 ```bash
 apk add --no-cache libsodium
-apt-get install -y libsodium
+apt-get install -y libsodium23
 ```
 
 Config
@@ -22,6 +22,7 @@ Dev
 
 When changing dependencies or the build image, ie any of these files:
 
+* c/build
 * c/install
 * c/pipinstall
 * Dockerfile
@@ -36,74 +37,49 @@ published by a master build.
 
 !! Do not forget to increment MANABI_IMAGE_VERSION in ./c/config
 
-TODO
-----
-
-* cookie checks: initial, refresh
-
-* prevent save as?
-
-* lock time
-
-* report actually allowed method, eg no MOVE
-
-* test refresh
-
-* test cookie timeout
-
-* test request-based token timeout
 
 TODO later
 ----------
 
-* use has_a instead of is_a to harden against implementation changes
+* use has_a instead of is_a when extending wsgi-dav classes to harden against
+  implementation changes
 
-Longterm TODO
--------------
+Config
+------
 
-Change Dict[...] to dict[...] once mypy supports that. Python 3.7 already
-supports it using `from __future__ import annotations`. The same is true for any
-builtin type. See PEP 585.
+mount_path
+: prefix that gets passed to wsgidav, if URL rewrites remove any prefixes use
+`"/"`
 
-Some ways to plug into wsgidav
-------------------------------
+lock_manager
+: The ManabiLockLockStorage forces the WebDav log-timeout to 
+`token-refresh-time / 2`
 
-Python code:
+provider_mapping
+: Extends the FilesystemProvider any will only serve files if the token is valid
 
-```python
-from wsgidav.dc.simple_dc import SimpleDomainController
-from wsgidav.fs_dav_provider import FilesystemProvider
-from wsgidav.middleware import BaseMiddleware
+middleware_stack
+: based on the default middleware_stack but HTTPAuthenticator is replace by
+ManabiAuthenticator, which validates the tokens.
 
+manabi.key
+: shared-key between the server that creates tokens to grant access and wsgi-dav
 
-class ManabiAuthenticator(BaseMiddleware):
-    def __call__(self, environ, start_response):
-        print("hello middleware")
-        return self.next_app(environ, start_response)
+manabi.refresh
+: how often tokens are refreshed in seconds, we recommend 10 minutes: `600`
 
-
-class ManabiDomainCotroller(SimpleDomainController):
-    def require_authentication(self, realm, environ):
-        print("hello controller")
-        return False
-
-
-class ManabiProvider(FilesystemProvider):
-    def get_resource_inst(self, path, environ):
-        print("hello provider")
-        return super().get_resource_inst(path, environ)
-```
-
-Config:
+manabi.initial
+: the time from the token being generated till it has to be refreshed the first
+time, we recommend 1 minues: `60`. In case tokens leak, for example via cache on
+a computer, tokens should be expired by the time an adversary gets them.
 
 ```python
 config = {
-    "host": "0.0.0.0",
-    "port": 8080,
+    "mount_path": "/dav",
+    "lock_manager": ManabiLockLockStorage(refresh),
     "provider_mapping": {
-        "/": ManabiProvider("/home/sonder"),
+        "/": ManabiProvider(settings.MEDIA_ROOT),
     },
-    "verbose": 1,
     "middleware_stack": [
         WsgiDavDebugFilter,
         ErrorPrinter,
@@ -111,6 +87,31 @@ config = {
         WsgiDavDirBrowser,
         RequestResolver,
     ],
-    "http_authenticator": {"domain_controller": ManabiDomainCotroller},
+    "manabi": {
+        "key": key,
+        "refresh": refresh,
+        "initial": settings.MANABI_TOKEN_ACTIVATE_TIMEOUT,
+    },
 }
 ```
+
+Release notes
+=============
+
+0.2
+---
+
+* ManabiLockLockStorage takes `storage: Path` as argument, pointing to the
+  shared lock-storage. ManabiLockLockStorage will store the locks as
+  sqlite-database. In the future we might use memcache or some other method.
+
+* Users should add
+
+```python
+    "hotfixes": {
+        "re_encode_path_info": False,
+    },
+```
+
+to their config, as this workaround is not correct on webservers that work
+correctly. I we have tested this extensively with cherrypy.
