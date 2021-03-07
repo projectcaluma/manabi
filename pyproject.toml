@@ -1,3 +1,57 @@
+[tool.poetry]
+name = "manabi"
+version = "0.1.0"
+description = "Provide WebDAV access for documents."
+homepage = "https://github.com/projectcaluma/manabi"
+repository = "https://github.com/projectcaluma/manabi"
+authors = ["Adfinis AG"]
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+classifiers = [
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+WsgiDAV = "^3.1.0"
+pybranca = "^0.4.0"
+pybase62 = "^0.4.3"
+attrs = "^20.3.0"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+pytest = "^6.2.2"
+pdbpp = "^0.10.2"
+isort = "^5.7.0"
+flake8 = "^3.8.4"
+flake8-bugbear = "^21.3.1"
+flake8-debugger = "^4.0.0"
+flake8-docstrings = "^1.5.0"
+flake8-isort = "^4.0.0"
+flake8-string-format = "^0.3.0"
+flake8-tuple = "^0.4.1"
+python-language-server = "^0.36.2"
+cheroot = "^8.5.2"
+requests = "^2.25.1"
+hypothesis = "^6.6.0"
+mypy = "^0.812"
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
+line_length = 88
+
+# No flake8 pyproject support yet, please edit .flake8
+
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta:__legacy__"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
