@@ -11,41 +11,25 @@ apk add --no-cache libsodium
 apt-get install -y libsodium23
 ```
 
+Dev
+===
+
+Currently wsgidav is broken for python 3.8+.
+
+Enable dev-env:
+
+```bash
+pyenv install 3.7.10
+poetry env use $HOME/.pyenv/versions/3.7.10/bin/python3.7
+poetry install
+poetry shell
+```
+
 Config
 ------
 
 Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
 shared between the caluma/alexandria backend and the WebDAV server.
-
-Dev
-===
-
-When changing dependencies or the build image, ie any of these files:
-
-* c/build
-* c/install
-* c/pipinstall
-* Dockerfile
-* Pipfile
-* Pipfile.lock
-* setup.cfg
-* setup.py
-* MANIFEST.in
-
-You need to merge the changes to master first, because the container can only be
-published by a master build.
-
-!! Do not forget to increment MANABI_IMAGE_VERSION in ./c/config
-
-
-TODO later
-----------
-
-* use has_a instead of is_a when extending wsgi-dav classes to harden against
-  implementation changes
-
-Config
-------
 
 mount_path
 : prefix that gets passed to wsgidav, if URL rewrites remove any prefixes use
@@ -94,6 +78,28 @@ config = {
     },
 }
 ```
+
+gitlab
+======
+
+We have switched to github-workflows, but the gitlab-ci is still inplace.
+
+When changing dependencies or the build image, ie any of these files:
+
+* c/build
+* c/install
+* c/pipinstall
+* Dockerfile
+* Pipfile
+* Pipfile.lock
+* setup.cfg
+* setup.py
+* MANIFEST.in
+
+You need to merge the changes to master first, because the container can only be
+published by a master build.
+
+!! Do not forget to increment MANABI_IMAGE_VERSION in ./c/config
 
 Release notes
 =============

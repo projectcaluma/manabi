@@ -19,4 +19,4 @@ else
     docker build --build-arg VERSION=v$VERSION -t test .
 fi
 
-docker run test pipenv run "$@"
+docker run test poetry run "$@"
