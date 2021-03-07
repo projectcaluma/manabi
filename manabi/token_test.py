@@ -1,4 +1,5 @@
 import shutil
+from os import environ
 from pathlib import Path
 from subprocess import PIPE, run
 
@@ -162,7 +163,11 @@ def other_impl_decode(string: bytes):
         assert from_string(proc.stdout.decode("UTF-8")) == string
 
 
-@pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")
+def cargo_build():
+    return not shutil.which("cargo") or "GITHUB_WORKFLOW" in environ
+
+
+@pytest.mark.skipif(cargo_build(), reason="needs rustc and cargo")
 def test_other_impl_decode(cargo):
     other_impl_decode("hello world".encode("UTF-8"))
 
@@ -170,7 +175,7 @@ def test_other_impl_decode(cargo):
 # TODO test binary data when branca-rust supports binary data:
 # https://github.com/return/branca/issues/10
 # hypothesis doesn't like fixtures anymore
-@pytest.mark.skipif(not shutil.which("cargo"), reason="needs rustc and cargo")
+@pytest.mark.skipif(cargo_build(), reason="needs rustc and cargo")
 @given(text(min_size=1))
 def test_other_impl_decode_hyp(cargo, string: str):
     bstr = string.encode("UTF-8")

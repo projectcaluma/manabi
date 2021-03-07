@@ -13,7 +13,32 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install libsodium
-        run: apt-get install -y libsodium23
+        run: sudo apt-get install -y libsodium23
+
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
       - name: Install virtual-env
-        run: poetry install
+        run: |
+          pip install -U pip
+          pip install -U poetry
+          poetry install
+
+      - name: Run tests
+        run: poetry run pytest manabi
+
+      - name: Run flake8
+        run: poetry run flake8 manabi
+
+      - name: Run mypy
+        run: poetry run mypy manabi
+
+      - name: Run isort
+        run: poetry run isort --check-only manabi
+
+      - name: Run black
+        run: poetry run black --check manabi
