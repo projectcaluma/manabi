@@ -20,6 +20,20 @@ shared between the caluma/alexandria backend and the WebDAV server.
 Dev
 ===
 
+Currently wsgidav is broken for python 3.8+.
+
+Enable dev-env:
+
+```bash
+pyenv install 3.7.10
+poetry env use $HOME/.pyenv/versions/3.7.10/bin/python3.7
+poetry install
+poetry shell
+```
+
+Devold
+======
+
 When changing dependencies or the build image, ie any of these files:
 
 * c/build
