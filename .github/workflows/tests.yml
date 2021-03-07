@@ -29,16 +29,21 @@ jobs:
           poetry install
 
       - name: Run tests
+        continue-on-error: true
         run: poetry run pytest manabi
 
       - name: Run flake8
-        run: poetry run flake8 manabi
+        continue-on-error: true
+        run: poetry run flake8 manabi && false
 
       - name: Run mypy
+        continue-on-error: true
         run: poetry run mypy manabi
 
       - name: Run isort
+        continue-on-error: true
         run: poetry run isort --check-only manabi
 
       - name: Run black
+        continue-on-error: true
         run: poetry run black --check manabi
