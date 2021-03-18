@@ -2,7 +2,11 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Tuple
 
 from wsgidav.middleware import BaseMiddleware  # type: ignore
-from wsgidav.util import get_module_logger, init_logging  # type: ignore
+from wsgidav.util import (  # type: ignore
+    SubAppStartResponse,
+    get_module_logger,
+    init_logging,
+)
 
 _logger = get_module_logger(__name__)
 
@@ -46,3 +50,43 @@ def verbose_logging() -> None:
             ],
         }
     )
+
+
+class ResponseLogger(BaseMiddleware):
+    def __init__(self, application, next_app, config):
+        self.__application = application
+        self.next_app = next_app
+
+    def __call__(self, environ, start_response):
+        sub_app_start_response = SubAppStartResponse()
+        first_yield = True
+        app_iter = self.next_app(environ, sub_app_start_response)
+
+        for v in app_iter:
+            # Start response (the first time)
+            if first_yield:
+                # Success!
+                start_response(
+                    sub_app_start_response.status,
+                    sub_app_start_response.response_headers,
+                    sub_app_start_response.exc_info,
+                )
+
+            if environ["REQUEST_METHOD"] == "LOCK":
+                _logger.debug(f"LOCK Response: {v.decode('utf-8')}")
+            first_yield = False
+            yield v
+
+        if hasattr(app_iter, "close"):
+            app_iter.close()
+
+        # Start response (if it hasn't been done yet)
+        if first_yield:
+            # Success!
+            start_response(
+                sub_app_start_response.status,
+                sub_app_start_response.response_headers,
+                sub_app_start_response.exc_info,
+            )
+
+        return
