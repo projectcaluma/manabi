@@ -79,28 +79,6 @@ config = {
 }
 ```
 
-gitlab
-======
-
-We have switched to github-workflows, but the gitlab-ci is still inplace.
-
-When changing dependencies or the build image, ie any of these files:
-
-* c/build
-* c/install
-* c/pipinstall
-* Dockerfile
-* Pipfile
-* Pipfile.lock
-* setup.cfg
-* setup.py
-* MANIFEST.in
-
-You need to merge the changes to master first, because the container can only be
-published by a master build.
-
-!! Do not forget to increment MANABI_IMAGE_VERSION in ./c/config
-
 Release notes
 =============
 
