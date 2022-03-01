@@ -1,9 +1,0 @@
-#!/bin/sh
-
-find . -name "*.py" | entr sh -c "
-    set -e
-    dmypy run -- manabi
-    flake8 manabi
-    pytest manabi
-    ag TODO manabi
-"

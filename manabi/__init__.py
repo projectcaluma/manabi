@@ -4,7 +4,7 @@ from wsgidav.http_authenticator import HTTPAuthenticator  # type: ignore
 from .auth import ManabiAuthenticator
 
 
-class MetaFakeHTTPAuthenticator(type):
+class MetaFakeHTTPAuthenticator(type(http_authenticator.HTTPAuthenticator)):  # type: ignore
     def __instancecheck__(cls, instance):
         return isinstance(instance, HTTPAuthenticator) or isinstance(
             instance, ManabiAuthenticator

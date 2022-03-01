@@ -8,9 +8,9 @@ from typing import Any, Callable, Dict, Generator, Optional, Tuple
 from unittest import mock as unitmock
 
 from cheroot import wsgi  # type: ignore
-from wsgidav.debug_filter import WsgiDavDebugFilter  # type: ignore
 from wsgidav.dir_browser import WsgiDavDirBrowser  # type: ignore
 from wsgidav.error_printer import ErrorPrinter  # type: ignore
+from wsgidav.mw.debug_filter import WsgiDavDebugFilter  # type: ignore
 from wsgidav.request_resolver import RequestResolver  # type: ignore
 from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
@@ -51,7 +51,7 @@ def get_config(server_dir: Path, lock_storage: Path):
         "host": "0.0.0.0",
         "port": 8080,
         "mount_path": "/dav",
-        "lock_manager": ManabiLockLockStorage(refresh, lock_storage),
+        "lock_storage": ManabiLockLockStorage(refresh, lock_storage),
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
@@ -154,20 +154,15 @@ def get_server(config: Dict[str, Any]) -> wsgi.Server:
             "/dav": dav_app,
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)
-        server_args = {
-            "bind_addr": bind_addr,
-            "wsgi_app": dispatch,
-        }
-
-        server = wsgi.Server(**server_args)
+        server = wsgi.Server(bind_addr, dispatch)
         server.prepare()
         _servers[bind_addr] = server
-        server._manabi_id = bind_addr
+        server._manabi_id = bind_addr  # type: ignore
     return server
 
 
 def remove_server(server: wsgi.Server):
-    _servers.pop(server._manabi_id)
+    _servers.pop(server._manabi_id)  # type: ignore
 
 
 @contextmanager
