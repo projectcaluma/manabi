@@ -3,7 +3,7 @@ import shelve
 from contextlib import contextmanager
 from pathlib import Path
 
-from wsgidav.lock_storage import LockStorageDict  # type: ignore
+from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
 
 _logger = get_module_logger(__name__)
@@ -78,16 +78,19 @@ class ManabiLockLockStorage(LockStorageDict):
         with self.get_shelve():
             return super().create(path, lock)
 
-    def refresh(self, token, timeout):
+    def refresh(self, token, *, timeout):
         with self.get_shelve():
-            return super().refresh(token, timeout)
+            return super().refresh(token, timeout=timeout)
 
     def delete(self, token):
         with self.get_shelve():
             return super().delete(token)
 
-    def get_lock_list(self, path, include_root, include_children, token_only):
+    def get_lock_list(self, path, *, include_root, include_children, token_only):
         with self.get_shelve():
             return super().get_lock_list(
-                path, include_root, include_children, token_only
+                path,
+                include_root=include_root,
+                include_children=include_children,
+                token_only=token_only,
             )

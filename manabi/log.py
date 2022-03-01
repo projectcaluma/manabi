@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Any, Callable, Dict, List, Tuple
 
-from wsgidav.middleware import BaseMiddleware  # type: ignore
+from wsgidav.mw.base_mw import BaseMiddleware  # type: ignore
 from wsgidav.util import (  # type: ignore
     SubAppStartResponse,
     get_module_logger,
@@ -38,7 +38,7 @@ def verbose_logging() -> None:
             "enable_loggers": [
                 "manabi.log",
                 "manabi.lock",
-                "lock_manager",
+                "lock_storage",
                 "lock_storage",
                 "request_resolver",
                 "request_server",

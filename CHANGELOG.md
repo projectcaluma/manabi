@@ -1,5 +1,10 @@
 # Changelog
 
+## Next
+
+- Renamed option `lock_manager` to `lock_storage`
+- Removed support for python 3.6 and added support for 3.10
+
 ## 0.2
 
 - ManabiLockLockStorage takes `storage: Path` as argument, pointing to the
