@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7 <=3.10"
+python = ">=3.7"
 WsgiDAV = "^4.0.1"
 pybranca = "^0.5.0"
 pybase62 = "^0.4.3"
