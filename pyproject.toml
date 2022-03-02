@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "manabi"
-version = "0.4.0"
+version = "0.5.0"
 description = "Provide WebDAV access for documents."
 homepage = "https://github.com/projectcaluma/manabi"
 repository = "https://github.com/projectcaluma/manabi"

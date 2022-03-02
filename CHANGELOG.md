@@ -2,6 +2,15 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.0
+
+### Breaking
+* Renamed option `lock_manager` to `lock_storage`, removed support for python 3.6 and added support for python 3.8, 3.9 and 3.10. ([`92fed81`](https://github.com/projectcaluma/manabi/commit/92fed817353d28b02f64a9ec84dca0cc4e418037))
+
+### Documentation
+* **changelog:** Move changelog to separate file ([`aaa80ea`](https://github.com/projectcaluma/manabi/commit/aaa80eac7165ed78be2e7783e0717bb9423891cf))
+
+
 ## 0.2
 
 - ManabiLockLockStorage takes `storage: Path` as argument, pointing to the
