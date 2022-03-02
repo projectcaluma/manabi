@@ -66,7 +66,7 @@ upload_to_repository = true
 upload_to_release = true
 build_command = "poetry build"
 commit_subject = "chore(release): v{version}"
-commit_author = "github-actions <action@github.com>"
+commit_author = "github-actions <github-actions@github.com>"
 
 # No flake8 pyproject support yet, please edit .flake8
 
