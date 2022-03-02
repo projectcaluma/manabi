@@ -16,6 +16,12 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
+include = ["CHANGELOG.md"]
+exclude = [
+    "manabi/__main__.py",
+    "manabi/*_test.py",
+    "manabi/data",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.7, <4"
