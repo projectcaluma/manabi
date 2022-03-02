@@ -58,7 +58,6 @@ combine_as_imports = true
 line_length = 88
 
 [tool.semantic_release]
-version_source = "tag"
 version_toml = "pyproject.toml:tool.poetry.version"
 branch = "main"
 major_on_zero = false
@@ -66,6 +65,7 @@ upload_to_repository = true
 upload_to_release = true
 build_command = "poetry build"
 commit_subject = "chore(release): v{version}"
+commit_author = "github-actions <action@github.com>"
 
 # No flake8 pyproject support yet, please edit .flake8
 
