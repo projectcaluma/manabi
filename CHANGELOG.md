@@ -1,9 +1,6 @@
 # Changelog
 
-## Next
-
-- Renamed option `lock_manager` to `lock_storage`
-- Removed support for python 3.6 and added support for 3.10
+<!--next-version-placeholder-->
 
 ## 0.2
 
