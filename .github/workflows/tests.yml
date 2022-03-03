@@ -20,8 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Setup python
         uses: actions/setup-python@v2
@@ -30,15 +29,15 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ~/.cache/poetry
+          path: ~/.venv
           key: poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             poetry-
 
-      - name: Install virtual-env
+      - name: Install dependencies
         run: |
-          pip install -U pip
           pip install -U poetry
+          poetry config virtualenvs.in-project true
           poetry install
 
       - name: Run flake8
@@ -53,8 +52,8 @@ jobs:
       - name: Run black
         run: poetry run black --check manabi
 
-  standard-tests:
-    name: Run tests
+  compatibility-tests:
+    name: Compatibility tests
     needs: [lint]
     runs-on: ubuntu-latest
 
@@ -67,8 +66,7 @@ jobs:
           - "3.10"
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Install libsodium
         run: sudo apt-get install -y libsodium23
@@ -80,15 +78,15 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ~/.cache/poetry
+          path: ~/.venv
           key: poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             poetry-
 
-      - name: Install virtual-env
+      - name: Install dependendies
         run: |
-          pip install -U pip
           pip install -U poetry
+          poetry config virtualenvs.in-project true
           poetry install
 
       - name: Run tests

@@ -9,7 +9,9 @@ concurrency:
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -22,15 +24,15 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-          path: ~/.cache/poetry
+          path: ~/.venv
           key: poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             poetry-
 
       - name: Install dependencies
         run: |
-          pip install -U pip
           pip install -U poetry
+          poetry config virtualenvs.in-project true
           poetry install
 
       - name: Run semantic release
