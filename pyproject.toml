@@ -19,6 +19,7 @@ classifiers = [
 include = ["CHANGELOG.md"]
 exclude = [
     "manabi/__main__.py",
+    "manabi/conftest.py",
     "manabi/mock.py",
     "manabi/*_test.py",
     "manabi/data",
