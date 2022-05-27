@@ -49,7 +49,7 @@ cheroot = "^8.6.0"
 requests = "^2.27.1"
 hypothesis = "^6.39.0"
 mypy = "^0.931"
-types-requests = "^2.27.11"
+types-requests = "^2.27.29"
 python-semantic-release = "^7.25.2"
 
 [tool.isort]
