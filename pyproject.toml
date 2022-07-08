@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "manabi"
-version = "0.5.2"
+version = "0.6.5"
 description = "Provide WebDAV access for documents."
 homepage = "https://github.com/projectcaluma/manabi"
 repository = "https://github.com/projectcaluma/manabi"
@@ -24,33 +24,40 @@ exclude = [
     "manabi/*_test.py",
     "manabi/data",
 ]
+packages = [
+    { include = "manabi" },
+    { include = "manabi_migrations", from = "manabi_django" },
+]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 WsgiDAV = "^4.0.1"
 pybranca = "^0.5.0"
-pybase62 = "^0.4.3"
-attrs = "^21.4.0"
+pybase62 = "^0.5.0"
+attrs = "^22.1.0"
+django = "^3.2.14"
+psycopg2-binary = "^2.9.3"
+types-psycopg2 = "^2.9.16"
 
 [tool.poetry.dev-dependencies]
-black = "^22.1.0"
-pytest = "^7.0.1"
+black = "^22.6.0"
+pytest = "^7.1.2"
 pdbpp = "^0.10.3"
 isort = "^5.10.1"
-flake8 = "^4.0.1"
-flake8-bugbear = "^22.1.11"
-flake8-debugger = "^4.0.0"
+flake8 = "^5.0.4"
+flake8-bugbear = "^22.6.22"
+flake8-debugger = "^4.1.2"
 flake8-docstrings = "^1.6.0"
 flake8-isort = "^4.0.2"
 flake8-string-format = "^0.3.0"
 flake8-tuple = "^0.4.1"
 python-language-server = "^0.36.2"
 cheroot = "^8.6.0"
-requests = "^2.27.1"
-hypothesis = "^6.39.0"
-mypy = "^0.931"
-types-requests = "^2.27.11"
-python-semantic-release = "^7.25.2"
+requests = "^2.28.1"
+hypothesis = "^6.48.2"
+mypy = "^0.971"
+types-requests = "^2.28.0"
+python-semantic-release = "^7.29.4"
 
 [tool.isort]
 multi_line_output = 3

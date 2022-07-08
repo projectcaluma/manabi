@@ -2,9 +2,10 @@ import os
 import shutil
 from contextlib import contextmanager
 from functools import partial
+from glob import glob
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, Dict, Generator, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Optional, Tuple, Union
 from unittest import mock as unitmock
 
 from cheroot import wsgi  # type: ignore
@@ -12,11 +13,11 @@ from wsgidav.dir_browser import WsgiDavDirBrowser  # type: ignore
 from wsgidav.error_printer import ErrorPrinter  # type: ignore
 from wsgidav.mw.debug_filter import WsgiDavDebugFilter  # type: ignore
 from wsgidav.request_resolver import RequestResolver  # type: ignore
-from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
+from . import ManabiDAVApp
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
-from .lock import ManabiLockLockStorage
+from .lock import ManabiDbLockStorage, ManabiShelfLockLockStorage
 from .log import HeaderLogger, ResponseLogger
 from .token import Key, Token, now
 from .util import get_rfc1123_time
@@ -27,6 +28,7 @@ _lock_storage = Path("/tmp/296fe33fcca.lock")
 _module_dir = Path(__file__).parent
 _test_file1 = Path(_module_dir, "data", "asdf.docx")
 _test_file2 = Path(_module_dir, "data", "qwert.docx")
+_postgres_dsn = "dbname=manabi user=manabi host=localhost password=manabi"
 
 
 @contextmanager
@@ -44,14 +46,20 @@ def get_server_dir():
     return _server_dir
 
 
-def get_config(server_dir: Path, lock_storage: Path):
+# psycopg2.extensions.connection
+def get_config(server_dir: Path, lock_storage: Union[Path, str]):
     refresh = 600
-    base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8080"
+    base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8081"
+    lock_obj: Union[ManabiShelfLockLockStorage, ManabiDbLockStorage]
+    if isinstance(lock_storage, Path):
+        lock_obj = ManabiShelfLockLockStorage(refresh, lock_storage)
+    else:
+        lock_obj = ManabiDbLockStorage(refresh, lock_storage)
     return {
         "host": "0.0.0.0",
-        "port": 8080,
+        "port": 8081,
         "mount_path": "/dav",
-        "lock_storage": ManabiLockLockStorage(refresh, lock_storage),
+        "lock_storage": lock_obj,
         "provider_mapping": {
             "/": ManabiProvider(server_dir),
         },
@@ -147,7 +155,7 @@ def get_server(config: Dict[str, Any]) -> wsgi.Server:
     bind_addr = (config["host"], config["port"])
     server = _servers.get(bind_addr)
     if not server:
-        dav_app = WsgiDAVApp(config)
+        dav_app = ManabiDAVApp(config)
 
         path_map = {
             "/test": partial(serve_document, config),
@@ -168,7 +176,8 @@ def remove_server(server: wsgi.Server):
 @contextmanager
 def lock_storage():
     try:
-        _lock_storage.unlink()
+        for f in glob(f"{_lock_storage}*"):
+            Path(f).unlink()
     except FileNotFoundError:
         pass
     yield Path(_lock_storage)
