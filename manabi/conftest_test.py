@@ -12,7 +12,7 @@ def test_server_not_found(server, config: Dict[str, Any]):
 
 
 def test_server_denied(server, config: Dict[str, Any]):
-    f = "http://localhost:8080/dav/bla.pdf"
+    f = "http://localhost:8081/dav/bla.pdf"
     res = requests.get(f)
     assert res.status_code == 403
 

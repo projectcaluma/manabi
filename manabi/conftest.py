@@ -5,6 +5,7 @@ from typing import Any, Dict, Generator
 from unittest import mock as unitmock
 
 import pytest  # type: ignore
+from psycopg2 import connect
 
 from . import mock
 from .log import verbose_logging
@@ -15,10 +16,32 @@ def enable_verbose_logging() -> None:
     verbose_logging()
 
 
+def clean_db_exec():
+    storage = connect(mock._postgres_dsn)
+    storage.cursor().execute("DELETE FROM manabi_lock")
+    storage.commit()
+    storage.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clean_db() -> Generator[None, None, None]:
+    clean_db_exec()
+    yield
+    clean_db_exec()
+
+
 @pytest.fixture()
-def lock_storage():
-    with mock.lock_storage() as storage:
-        yield storage
+def postgres_dsn():
+    return mock._postgres_dsn
+
+
+@pytest.fixture(params=[True, False])
+def lock_storage(request, postgres_dsn):
+    if request.param:
+        yield postgres_dsn
+    else:
+        with mock.lock_storage() as storage:
+            yield storage
 
 
 @pytest.fixture()

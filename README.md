@@ -18,6 +18,8 @@ pyenv install 3.10.2
 poetry env use $HOME/.pyenv/versions/3.10.2/bin/python3.10
 poetry install
 poetry shell
+docker-compose up -d db
+(cd manabi_django && ./manage.py migrate manabi_migrations)
 ```
 
 ## Config
@@ -57,9 +59,12 @@ time, we recommend 1 minues: `60`. In case tokens leak, for example via cache on
 a computer, tokens should be expired by the time an adversary gets them.
 
 ```python
+from manabi import ManabiDAVApp
+
+postgres_dsn = "dbname=manabi user=manabi host=localhost password=manabi"
 config = {
     "mount_path": "/dav",
-    "lock_storage": ManabiLockLockStorage(refresh),
+    "lock_storage": ManabiDbLockStorage(refresh, postgres_dsn),
     "provider_mapping": {
         "/": ManabiProvider(settings.MEDIA_ROOT),
     },
@@ -76,4 +81,5 @@ config = {
         "initial": settings.MANABI_TOKEN_ACTIVATE_TIMEOUT,
     },
 }
+dav_app = ManabiDAVApp(config)
 ```
