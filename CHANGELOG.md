@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.0 (2022-08-15)
+### Feature
+* Postgres-based lock-storage
+([`c722aee`](https://github.com/projectcaluma/manabi/commit/c722aeefee98f2d57267ad6c26563e7a8a246980))
+
 ## v0.5.2 (2022-03-02)
 ### Fix
 * **build:** Exclude mock from build ([`f6df578`](https://github.com/projectcaluma/manabi/commit/f6df5787432870239ddecc8075718694023866e3))
