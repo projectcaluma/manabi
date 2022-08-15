@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.1 (2022-08-15)
+### Chore
+* depend on psycopg2-binary instead of psycopg2
+([`9de4b2`](https://github.com/projectcaluma/manabi/commit/9de4b2b2a6d7755d617e85028badfdea78c9bd12))
+
 ## v0.6.0 (2022-08-15)
 ### Feature
 * Postgres-based lock-storage
