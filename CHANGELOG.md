@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.2 (2022-08-15)
+### Fix
+* Include manabi_migrations in package ([`f387ff8`](https://github.com/projectcaluma/manabi/commit/f387ff87a3ce4eb229d57d5ac7c07d3810fe14e3))
+
 ## v0.6.1 (2022-08-15)
 ### Chore
 * depend on psycopg2-binary instead of psycopg2
