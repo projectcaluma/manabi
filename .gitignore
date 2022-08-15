@@ -7,3 +7,4 @@ __pycache__
 /branca-test/target/
 /.dmypy.json
 .python-version
+/.vscode/

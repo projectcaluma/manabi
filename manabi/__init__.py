@@ -1,7 +1,14 @@
 from wsgidav import http_authenticator  # type: ignore
 from wsgidav.http_authenticator import HTTPAuthenticator  # type: ignore
+from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
 
 from .auth import ManabiAuthenticator
+
+
+class ManabiDAVApp(WsgiDAVApp):
+    def __init__(self, config):
+        super().__init__(config)
+        self.lock_manager._lock = config["lock_storage"]._lock
 
 
 class MetaFakeHTTPAuthenticator(type(http_authenticator.HTTPAuthenticator)):  # type: ignore

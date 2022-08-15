@@ -23,7 +23,7 @@ def mod_server() -> Generator:
 
 
 def dumb_force(url):
-    req = f"http://localhost:8080/dav/{url}"
+    req = f"http://localhost:8081/dav/{url}"
     res = requests.get(req)
     assert res.status_code == 403
 
@@ -46,7 +46,7 @@ def test_dumb_quote_force(mod_server, url):
 
 def structured_force(url, sep="/"):
     url = sep.join(url)
-    req = f"http://localhost:8080/dav/{url}"
+    req = f"http://localhost:8081/dav/{url}"
     res = requests.get(req)
     assert res.status_code == 403
 
@@ -89,7 +89,7 @@ def force_with_token(url, past, do_quote=False, sep="/"):
         elif do_quote:
             url[i] = quote(url[i])
     url = sep.join(url)
-    req = f"http://localhost:8080/dav/{url}"
+    req = f"http://localhost:8081/dav/{url}"
     res = requests.get(req)
     assert res.status_code == 403
 
