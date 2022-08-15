@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "manabi"
-version = "0.6.1"
+version = "0.6.2"
 description = "Provide WebDAV access for documents."
 homepage = "https://github.com/projectcaluma/manabi"
 repository = "https://github.com/projectcaluma/manabi"
@@ -23,6 +23,10 @@ exclude = [
     "manabi/mock.py",
     "manabi/*_test.py",
     "manabi/data",
+]
+packages = [
+    { include = "manabi" },
+    { include = "manabi_django/manabi_migrations/" },
 ]
 
 [tool.poetry.dependencies]
