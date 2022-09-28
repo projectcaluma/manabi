@@ -1,5 +1,12 @@
 version: 2
 updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "12:00"
+      timezone: "Europe/Zurich"
   - package-ecosystem: pip
     directory: "/"
     schedule:
@@ -8,6 +15,10 @@ updates:
       time: "12:00"
       timezone: "Europe/Zurich"
     open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: django
+        versions:
+          - ">=4"
   - package-ecosystem: docker
     directory: "/"
     schedule:
