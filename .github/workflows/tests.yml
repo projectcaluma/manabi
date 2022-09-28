@@ -68,15 +68,26 @@ jobs:
           - "3.9"
           - "3.10"
 
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_DB: manabi
+          POSTGRES_USER: manabi
+          POSTGRES_PASSWORD: manabi
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Setup environment
-        run: |
-          docker-compose up -d db
-          wget -q https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -P /usr/local/bin
-          chmod +x /usr/local/bin/wait-for-it.sh
-          sudo apt-get install -y libsodium23
+        run: sudo apt-get install -y libsodium23
 
       - name: Setup python
         uses: actions/setup-python@v4
@@ -96,5 +107,8 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install
 
+      - name: Run migrations
+        run: poetry run python manabi_django/manage.py migrate manabi_migrations
+
       - name: Run tests
-        run: wait-for-it.sh localhost:5432 -- poetry run python manabi_django/manage.py migrate manabi_migrations && poetry run pytest manabi
+        run: poetry run pytest manabi
