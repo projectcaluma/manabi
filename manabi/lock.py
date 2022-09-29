@@ -223,24 +223,25 @@ class ManabiPostgresDict(MutableMapping):
 
 
 class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
-    def __init__(self, refresh: float, lock_storage: str):
+    def __init__(self, refresh: float, postgres_dsn: str):
         super().__init__()
-        self._lock_storage = lock_storage
+        self._postgres_dsn = postgres_dsn
         self.max_timeout = refresh / 2
-        self._conconnection = connection = connect(self._lock_storage)
-        connection.commit()
-        connection.autocommit = False
-        connection.set_session(
-            isolation_level=psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE
-        )
-        self._lock = lock = ManabiPostgresLock(connection)
-        self._dict = ManabiPostgresDict(connection, lock)
 
     def open(self):
-        pass
+        self._connection = connect(self._postgres_dsn)
+        self._connection.commit()
+        self._connection.autocommit = False
+        self._connection.set_session(
+            isolation_level=psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE
+        )
+
+        self._lock = ManabiPostgresLock(self._connection)
+        self._dict = ManabiPostgresDict(self._connection, self._lock)
 
     def close(self):
-        pass
+        self._lock = None
+        self.connection.close()
 
     def create(self, path, lock):
         with self._lock:
