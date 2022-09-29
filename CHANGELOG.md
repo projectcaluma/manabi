@@ -2,11 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v0.6.7 (2022-09-29)
+
+### Fix
+* **postgres:** Make sure connection to postgresql is closed ([`df0b35d`](https://github.com/projectcaluma/manabi/commit/df0b35d04729071115b77d54fb6b3f34d4b99cad))
+
 ## v0.6.6 (2022-08-15)
+
 ### Feature
 * Postgres-based lock-storage ([`715ff71`](https://github.com/projectcaluma/manabi/commit/715ff716a8556c4edd5c7d3b18dffdf21cc2175b))
 
 ## v0.5.2 (2022-03-02)
+
 ### Fix
 * **build:** Exclude mock from build ([`f6df578`](https://github.com/projectcaluma/manabi/commit/f6df5787432870239ddecc8075718694023866e3))
 
