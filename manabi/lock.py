@@ -7,7 +7,7 @@ from collections.abc import MutableMapping
 from pathlib import Path
 
 import psycopg2.extensions
-from psycopg2 import connect
+from psycopg2 import InterfaceError, connect
 from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
 
@@ -41,26 +41,37 @@ class ManabiShelfLock(ManabiContextLockMixin):
         self._semaphore = 0
         self._lock_file = open(f"{storage_path}.lock", "wb+")
         self._fd = self._lock_file.fileno()
-        self._lock = threading.RLock()
         self.acquire_write = self.acquire_read = self.acquire
+        self._id = None
 
     def acquire(self):
-        self._lock.acquire()
+        tid = threading.get_ident()
+        if self._id and self._id != tid:
+            _logger.error("Do not use from multiple threads")
+        self._id = tid
         if self._semaphore == 0:
             fcntl.flock(self._fd, fcntl.LOCK_EX)
             self._storage_object()._dict = shelve.open(str(self._storage_path))
         self._semaphore += 1
 
     def release(self):
-        try:
-            self._semaphore -= 1
-            if self._semaphore == 0:
-                storage_object = self._storage_object()
-                storage_object._dict.close()
-                storage_object._dict = None
-                fcntl.flock(self._fd, fcntl.LOCK_UN)
-        finally:
-            self._lock.release()
+        tid = threading.get_ident()
+        if self._semaphore == 0:
+            import traceback
+
+            _logger.error(
+                f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
+            )
+        if self._id and self._id != tid:
+            _logger.error("Do not use from multiple threads")
+        self._id = tid
+        self._semaphore -= 1
+        if self._semaphore == 0:
+            storage_object = self._storage_object()
+            storage_object._dict.close()
+            storage_object._dict = None
+            fcntl.flock(self._fd, fcntl.LOCK_UN)
+        self._id = threading.get_ident()
 
 
 class ManabiShelfLockLockStorage(LockStorageDict, ManabiTimeoutMixin):
@@ -109,37 +120,43 @@ class ManabiShelfLockLockStorage(LockStorageDict, ManabiTimeoutMixin):
 
 
 class ManabiPostgresLock(ManabiContextLockMixin):
-    def __init__(self, connection):
-        self._connection = connection
-        self._lock = threading.RLock()
+    def __init__(self, storage):
+        self._id = None
+        self.storage = weakref.ref(storage)
         self.acquire_write = self.acquire_read = self.acquire
         self._semaphore = 0
-
-    def cursor(self) -> psycopg2.extensions.cursor:
-        return self._connection.cursor()
+        self._id = None
 
     def acquire(self):
-        self._lock.acquire()
+        tid = threading.get_ident()
+        if self._id and self._id != tid:
+            _logger.error("Do not use from multiple threads")
+        self._id = tid
         if self._semaphore == 0:
-            cursor = self.cursor()
-            cursor.execute("LOCK TABLE manabi_lock IN ACCESS EXCLUSIVE MODE")
+            _logger.info(f"{tid} acquire")
+            self.storage().execute("LOCK TABLE manabi_lock IN ACCESS EXCLUSIVE MODE")
         self._semaphore += 1
 
     def release(self):
-        try:
-            self._semaphore -= 1
-            if self._semaphore == 0:
-                self._connection.commit()
-        finally:
-            # We don't want to deadlock on a server error
-            self._lock.release()
+        tid = threading.get_ident()
+        if self._semaphore == 0:
+            import traceback
+
+            _logger.error(
+                f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
+            )
+        if self._id and self._id != tid:
+            _logger.error("Do not use from multiple threads")
+        self._id = tid
+        self._semaphore -= 1
+        if self._semaphore == 0:
+            _logger.info(f"{tid} release")
+            self.storage()._connection.commit()
 
 
 class ManabiPostgresDict(MutableMapping):
-    def __init__(
-        self, connection: psycopg2.extensions.connection, lock: ManabiPostgresLock
-    ):
-        self._connection = connection
+    def __init__(self, storage, lock):
+        self.storage = weakref.ref(storage)
         self._lock = lock
 
     @staticmethod
@@ -156,36 +173,32 @@ class ManabiPostgresDict(MutableMapping):
             if "manabi_was_bytes" in owner:
                 lock["owner"] = owner["manabi_was_bytes"].encode("UTF-8")
 
-    def cursor(self) -> psycopg2.extensions.cursor:
-        return self._connection.cursor()
-
     def cleanup(self):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute("DELETE FROM manabi_lock;")
+            self.storage().execute("DELETE FROM manabi_lock;")
 
     def __len__(self):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute("SELECT count(*) FROM manabi_lock")
+            cursor = self.storage().execute("SELECT count(*) FROM manabi_lock")
             return int(cursor.fetchone()[0])
 
     def __iter__(self):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute("SELECT token FROM manabi_lock")
+            cursor = self.storage().execute("SELECT token FROM manabi_lock")
             for token in cursor.fetchall():
                 yield token[0]
 
     def __delitem__(self, token):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute("DELETE FROM manabi_lock WHERE token = %s", (str(token),))
+            self.storage().execute(
+                "DELETE FROM manabi_lock WHERE token = %s", (str(token),)
+            )
 
     def __contains__(self, token):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute("SELECT 1 FROM manabi_lock WHERE token = %s", (str(token),))
+            cursor = self.storage().execute(
+                "SELECT 1 FROM manabi_lock WHERE token = %s", (str(token),)
+            )
             if cursor.fetchone() is None:
                 return False
             else:
@@ -193,10 +206,9 @@ class ManabiPostgresDict(MutableMapping):
 
     def __setitem__(self, token, lock):
         with self._lock:
-            cursor = self.cursor()
             self.decode_lock(lock)
             json_lock = json.dumps(lock)
-            cursor.execute(
+            self.storage().execute(
                 """
                     INSERT INTO manabi_lock(token, data) VALUES (%(token)s, %(data)s)
                         ON CONFLICT(token) DO
@@ -210,8 +222,7 @@ class ManabiPostgresDict(MutableMapping):
 
     def __getitem__(self, token):
         with self._lock:
-            cursor = self.cursor()
-            cursor.execute(
+            cursor = self.storage().execute(
                 "SELECT data FROM manabi_lock WHERE token = %s", (str(token),)
             )
             lock = cursor.fetchone()
@@ -227,21 +238,32 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         super().__init__()
         self._postgres_dsn = postgres_dsn
         self.max_timeout = refresh / 2
+        self.connect()
+        self._lock = ManabiPostgresLock(self)
+        self._dict = ManabiPostgresDict(self, self._lock)
 
-    def open(self):
+    def connect(self):
         self._connection = connect(self._postgres_dsn)
         self._connection.commit()
         self._connection.autocommit = False
         self._connection.set_session(
             isolation_level=psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE
         )
+        self._cursor = self._connection.cursor()
 
-        self._lock = ManabiPostgresLock(self._connection)
-        self._dict = ManabiPostgresDict(self._connection, self._lock)
+    def open(self):
+        pass
+
+    def execute(self, *args, **kwargs):
+        try:
+            self._cursor.execute(*args, **kwargs)
+        except InterfaceError:
+            self.connect()
+            self._cursor.execute(*args, **kwargs)
+        return self._cursor
 
     def close(self):
-        self._lock = None
-        self.connection.close()
+        pass
 
     def create(self, path, lock):
         with self._lock:

@@ -9,10 +9,9 @@ from urllib import request
 from urllib.error import HTTPError
 
 import requests
-from psycopg2 import connect
 from wsgidav.util import get_module_logger  # type: ignore
 
-from manabi.lock import ManabiDbLockStorage, ManabiPostgresLock
+from manabi import lock as mlock
 
 from . import mock
 from .mock import run_server
@@ -68,7 +67,7 @@ def get_lock_token(xml):
 def test_connection(server_dir, postgres_dsn):
     config = mock.get_config(server_dir, postgres_dsn)
     lock_storage = config["lock_storage"]
-    assert isinstance(lock_storage, ManabiDbLockStorage)
+    assert isinstance(lock_storage, mlock.ManabiDbLockStorage)
     lock_storage.cleanup()
 
 
@@ -240,6 +239,10 @@ def test_lock_spam_server(server_dir, lock_storage):
     run_concurrent_test(server_dir, lock_storage, run_lock_test, evaluate_result_strict)
 
 
+def test_lock_chaos_spam_server(chaos, server_dir, postgres_dsn):
+    run_concurrent_test(server_dir, postgres_dsn, run_lock_test, evaluate_result_strict)
+
+
 _thread_count = 0
 _local = threading.local()
 
@@ -247,7 +250,11 @@ _local = threading.local()
 def run_postgres_lock_test(dsn):
     global _thread_count
     if not hasattr(_local, "lock"):
-        _local.lock = ManabiPostgresLock(connect(dsn))
+        storage = mlock.ManabiDbLockStorage(600, dsn)
+        storage.open()
+        # We don't care about cyclic dependencies in pytest, let gc handle it
+        storage._lock._keep_alive = storage
+        _local.lock = storage._lock
     lock = _local.lock
     try:
         lock.acquire()
@@ -265,7 +272,7 @@ def run_postgres_lock_test(dsn):
     return None
 
 
-def test_postgres_lock(postgres_dsn):
+def test_postgres_lock(chaos, postgres_dsn):
     global _thread_count
 
     _thread_count = 0
