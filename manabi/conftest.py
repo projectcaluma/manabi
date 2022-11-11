@@ -9,6 +9,13 @@ from psycopg2 import connect
 
 from . import mock
 from .log import verbose_logging
+from .mock import MockManabiDbLockStorage
+
+
+@pytest.fixture()
+def chaos():
+    with unitmock.patch("manabi.lock.ManabiDbLockStorage", MockManabiDbLockStorage):
+        yield
 
 
 @pytest.fixture(scope="session", autouse=True)

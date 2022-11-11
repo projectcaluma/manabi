@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 from contextlib import contextmanager
 from functools import partial
@@ -14,10 +15,10 @@ from wsgidav.error_printer import ErrorPrinter  # type: ignore
 from wsgidav.mw.debug_filter import WsgiDavDebugFilter  # type: ignore
 from wsgidav.request_resolver import RequestResolver  # type: ignore
 
-from . import ManabiDAVApp
+from . import ManabiDAVApp, lock as mlock
 from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
-from .lock import ManabiDbLockStorage, ManabiShelfLockLockStorage
+from .lock import ManabiDbLockStorage as ManabiDbLockStorageOrig
 from .log import HeaderLogger, ResponseLogger
 from .token import Key, Token, now
 from .util import get_rfc1123_time
@@ -50,11 +51,11 @@ def get_server_dir():
 def get_config(server_dir: Path, lock_storage: Union[Path, str]):
     refresh = 600
     base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8081"
-    lock_obj: Union[ManabiShelfLockLockStorage, ManabiDbLockStorage]
+    lock_obj: Union[mlock.ManabiShelfLockLockStorage, mlock.ManabiDbLockStorage]
     if isinstance(lock_storage, Path):
-        lock_obj = ManabiShelfLockLockStorage(refresh, lock_storage)
+        lock_obj = mlock.ManabiShelfLockLockStorage(refresh, lock_storage)
     else:
-        lock_obj = ManabiDbLockStorage(refresh, lock_storage)
+        lock_obj = mlock.ManabiDbLockStorage(refresh, lock_storage)
     return {
         "host": "0.0.0.0",
         "port": 8081,
@@ -162,7 +163,7 @@ def get_server(config: Dict[str, Any]) -> wsgi.Server:
             "/dav": dav_app,
         }
         dispatch = wsgi.PathInfoDispatcher(path_map)
-        server = wsgi.Server(bind_addr, dispatch)
+        server = wsgi.Server(bind_addr, dispatch, numthreads=1)
         server.prepare()
         _servers[bind_addr] = server
         server._manabi_id = bind_addr  # type: ignore
@@ -227,3 +228,13 @@ def make_req(
     t = make_token(config, override_path)
     port = config["port"]
     return f"http://localhost:{port}/dav/{t.as_url()}"
+
+
+class MockManabiDbLockStorage(ManabiDbLockStorageOrig):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def execute(self, *args, **kwargs):
+        if random.random() > 0.8 and self._lock._semaphore == 0:
+            self._connection.close()
+        return super().execute(*args, **kwargs)
