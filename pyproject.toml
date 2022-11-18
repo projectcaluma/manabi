@@ -57,7 +57,7 @@ python-language-server = "0.36.2"
 python-semantic-release = "7.32.0"
 requests = "2.28.1"
 types-psycopg2 = "2.9.21"
-types-requests = "2.28.11"
+types-requests = "2.28.11.5"
 
 [tool.isort]
 multi_line_output = 3
