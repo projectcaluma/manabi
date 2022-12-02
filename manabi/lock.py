@@ -2,12 +2,13 @@ import fcntl
 import json
 import shelve
 import threading
+import traceback
 import weakref
 from collections.abc import MutableMapping
 from pathlib import Path
 
 import psycopg2.extensions
-from psycopg2 import InterfaceError, connect
+from psycopg2 import InterfaceError, OperationalError, connect
 from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
 
@@ -57,8 +58,6 @@ class ManabiShelfLock(ManabiContextLockMixin):
     def release(self):
         tid = threading.get_ident()
         if self._semaphore == 0:
-            import traceback
-
             _logger.error(
                 f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
             )
@@ -140,8 +139,6 @@ class ManabiPostgresLock(ManabiContextLockMixin):
     def release(self):
         tid = threading.get_ident()
         if self._semaphore == 0:
-            import traceback
-
             _logger.error(
                 f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
             )
@@ -238,11 +235,18 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         super().__init__()
         self._postgres_dsn = postgres_dsn
         self.max_timeout = refresh / 2
+        self._connection = None
         self.connect()
         self._lock = ManabiPostgresLock(self)
         self._dict = ManabiPostgresDict(self, self._lock)
 
     def connect(self):
+        try:
+            if self._connection:
+                # it the connecton failed, this might cause an exception, we do not care.
+                self._connection.close()
+        except Exception:
+            pass
         self._connection = connect(self._postgres_dsn)
         self._connection.commit()
         self._connection.autocommit = False
@@ -257,7 +261,11 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
     def execute(self, *args, **kwargs):
         try:
             self._cursor.execute(*args, **kwargs)
-        except InterfaceError:
+        except (InterfaceError, OperationalError):
+            _logger.error(
+                f"Postgres connection lost, reconnecting. {''.join(traceback.format_stack())}"
+            )
+
             self.connect()
             self._cursor.execute(*args, **kwargs)
         return self._cursor
