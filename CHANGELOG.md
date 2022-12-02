@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v0.7.1 (2022-12-02)
+
+### Fix
+* **postgres:** Reconnect on OperationalError too ([`c6f587f`](https://github.com/projectcaluma/manabi/commit/c6f587f6b855d8053536f99a6cc6afe654e44eb9))
+
+## v0.7.0 (2022-11-11)
+
+### Fix
+* **postgres:** Reconnect ([`b5fac12`](https://github.com/projectcaluma/manabi/commit/b5fac12089ef96e775959ef9597f8dfa86050609))
+
 ## v0.6.7 (2022-09-29)
 
 ### Fix
