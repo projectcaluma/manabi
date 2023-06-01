@@ -38,7 +38,7 @@ attrs = "^22.1.0"
 django = "^3.2.15"
 psycopg2-binary = "^2.9.3"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "22.8.0"
 cheroot = "8.6.0"
 flake8 = "5.0.4"
