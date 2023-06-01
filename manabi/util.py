@@ -33,7 +33,7 @@ def cattrib(
     return attrib(validator=handler, on_setattr=handler, **kwargs)
 
 
-def get_rfc1123_time(secs: float = None) -> str:
+def get_rfc1123_time(secs: Optional[float] = None) -> str:
     """Return <secs> in rfc 1123 date/time format (pass secs=None for current date)."""
     return formatdate(timeval=secs, localtime=False, usegmt=True)
 

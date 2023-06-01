@@ -80,7 +80,7 @@ class Token:
         return self.ciphertext
 
     @classmethod
-    def from_token(cls, token: "Token", timestamp: int = None) -> "Token":
+    def from_token(cls, token: "Token", timestamp: Optional[int] = None) -> "Token":
         if timestamp is None:
             return cls(token.key, token.path, now())
         else:
