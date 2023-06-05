@@ -4,16 +4,16 @@ import shelve
 import threading
 import traceback
 import weakref
+from abc import ABC, abstractmethod
 from collections.abc import MutableMapping
 from pathlib import Path
-from abc import ABC, abstractmethod
+from typing import Callable
 
 import psycopg2.extensions
-from psycopg2.extensions import connection as PsycopConnection
 from psycopg2 import InterfaceError, OperationalError, connect
+from psycopg2.extensions import connection as PsycopConnection
 from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
-from typing import Callable
 
 _logger = get_module_logger(__name__)
 
