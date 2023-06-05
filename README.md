@@ -9,19 +9,6 @@ apk add --no-cache libsodium
 apt-get install -y libsodium23
 ```
 
-# Dev
-
-Enable dev-env:
-
-```bash
-pyenv install 3.10.2
-poetry env use $HOME/.pyenv/versions/3.10.2/bin/python3.10
-poetry install
-poetry shell
-docker-compose up -d db
-(cd manabi_django && ./manage.py migrate manabi_migrations)
-```
-
 ## Config
 
 Call `manabi-keygen` and add the key to `config["manabi"]["key"]`. The key is
@@ -83,3 +70,25 @@ config = {
 }
 dav_app = ManabiDAVApp(config)
 ```
+
+# Dev
+
+Enable dev-env:
+
+```bash
+pyenv install 3.10.2
+poetry env use $HOME/.pyenv/versions/3.10.2/bin/python3.10
+poetry install
+poetry shell
+docker-compose up -d db
+(cd manabi_django && ./manage.py migrate manabi_migrations)
+```
+
+## Typing rules
+
+My typing rules for this project (there are no company rules):
+
+- In tests `# type: ignore` is allowed if fixing the issue does not help production-code
+- In production-code `# type: ignore` is allowed if a manual check happens or
+  we can guarantee some runtime behavior. For example we guarantee that a
+  weakref is always valid. Similar to `unsafe` in rust.

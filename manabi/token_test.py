@@ -19,16 +19,19 @@ def test_key_validator(config):
     key = Key.from_dictionary(config)
     assert len(key.data) == 32
     with pytest.raises(TypeError):
-        key.data = "huhu"
+        # well we want to test what happens if it is not correctly typed
+        key.data = "huhu"  # type: ignore
     with pytest.raises(ValueError):
-        key.data = b"huhu"
+        # well we want to test what happens if it is not correctly typed
+        key.data = b"huhu"  # type: ignore
 
 
 def test_ttl_validator(config):
     ttl = TTL.from_dictionary(config)
     assert ttl.initial == 600
     with pytest.raises(TypeError):
-        ttl.initial = "huhu"
+        # well we want to test what happens if it is not correctly typed
+        ttl.initial = "huhu"  # type: ignore
     assert ttl.initial == 600
 
 
@@ -38,7 +41,8 @@ def test_config_validator(config):
     assert cfg.ttl.initial == 600
     assert cfg.ttl.refresh == 600
     with pytest.raises(TypeError):
-        cfg.key = "huhu"
+        # well we want to test what happens if it is not correctly typed
+        cfg.key = "huhu"  # type: ignore
 
 
 def test_token_invalid_past(config):
@@ -76,8 +80,8 @@ def test_token_creation(config):
     assert token2.check() == State.valid
     assert token2.check(10) == State.valid
     assert token2.check(-10) == State.expired
-    assert token2.timestamp < now() + 10
-    assert token2.timestamp > now() - 10
+    assert token2.timestamp < now() + 10  # type: ignore
+    assert token2.timestamp > now() - 10  # type: ignore
     assert token2.initial(cfg.ttl) == State.valid
     assert token2.refresh(cfg.ttl) == State.valid
 
@@ -89,8 +93,8 @@ def test_token_creation(config):
     assert token.check() == State.valid
     assert token.check(10) == State.valid
     assert token.check(-10) == State.expired
-    assert token.timestamp < now() + 10
-    assert token.timestamp > now() - 10
+    assert token.timestamp < now() + 10  # type: ignore
+    assert token.timestamp > now() - 10  # type: ignore
 
     token = Token(cfg.key)
     assert token.check() == State.invalid
