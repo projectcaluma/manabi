@@ -11,7 +11,7 @@ from typing import Callable
 
 import psycopg2.extensions
 from psycopg2 import InterfaceError, OperationalError, connect
-from psycopg2.extensions import connection as PsycopConnection
+from psycopg2.extensions import connection as PsycopgConnection
 from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
 
@@ -19,14 +19,14 @@ _logger = get_module_logger(__name__)
 
 
 class ManabiTimeoutMixin:
-    _max_timeout: int = 0
+    _max_timeout: float = 0
 
     @property
     def max_timeout(self) -> float:
         return self._max_timeout
 
     @max_timeout.setter
-    def max_timeout(self, value: int) -> None:
+    def max_timeout(self, value: float) -> None:
         if value <= 0:
             raise ValueError("max_timeout must be a positive integer.")
         self._max_timeout = value
@@ -265,7 +265,7 @@ class ManabiPostgresDict(MutableMapping):
 
 
 class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
-    _connection: PsycopConnection
+    _connection: PsycopgConnection
 
     def __init__(self, refresh: float, postgres_dsn: str):
         super().__init__()
