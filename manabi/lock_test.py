@@ -45,14 +45,14 @@ def http(method, url, token=None, data=None):
             req.add_header("Lock-Token", token)
             ifstr = f"<{url}> (<{token}>)"
             req.add_header("If", ifstr)
-        req.get_method = lambda: method
+        req.get_method = lambda: method  # type: ignore
         res = opener.open(req)
         try:
             return res, res.read()
         finally:
             _logger.debug(f"xhttp-test-method {method}: {res.status}")
             res.close()
-    except Exception as e:
+    except HTTPError as e:
         _logger.debug(f"xhttp-test-mathod {method}: {e.status}")
         raise e
 
@@ -110,7 +110,7 @@ def test_lock_two_server(server_dir, lock_storage):
             try:
                 # Now the other server should fail without token
                 res, xml = http("LOCK", req2)
-            except Exception as e:
+            except HTTPError as e:
                 assert e.status == 423
 
             # Switch server
@@ -159,7 +159,7 @@ def run_req_test(req):
     try:
         code = requests.get(req).status_code
         return (Results.SUCCESS, code)
-    except Exception as e:
+    except HTTPError as e:
         if e.status == 500:
             return (Results.SERVER_ERROR, e)
         return (Results.UNKNOWN_ERROR, e)
@@ -253,7 +253,7 @@ def run_postgres_lock_test(dsn):
         storage = mlock.ManabiDbLockStorage(600, dsn)
         storage.open()
         # We don't care about cyclic dependencies in pytest, let gc handle it
-        storage._lock._keep_alive = storage
+        storage._lock._keep_alive = storage  # type: ignore
         _local.lock = storage._lock
     lock = _local.lock
     try:

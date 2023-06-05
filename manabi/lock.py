@@ -6,16 +6,31 @@ import traceback
 import weakref
 from collections.abc import MutableMapping
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 import psycopg2.extensions
+from psycopg2.extensions import connection as PsycopConnection
 from psycopg2 import InterfaceError, OperationalError, connect
 from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
 from wsgidav.util import get_module_logger  # type: ignore
+from typing import Callable
 
 _logger = get_module_logger(__name__)
 
 
 class ManabiTimeoutMixin:
+    _max_timeout: int = 0
+
+    @property
+    def max_timeout(self) -> float:
+        return self._max_timeout
+
+    @max_timeout.setter
+    def max_timeout(self, value: int) -> None:
+        if value <= 0:
+            raise ValueError("max_timeout must be a positive integer.")
+        self._max_timeout = value
+
     def set_timeout(self, lock):
         max_timeout = self.max_timeout
         timeout = lock.get("timeout")
@@ -27,7 +42,15 @@ class ManabiTimeoutMixin:
                 lock["timeout"] = max_timeout
 
 
-class ManabiContextLockMixin:
+class ManabiContextLockMixin(ABC):
+    @abstractmethod
+    def acquire(self):
+        pass
+
+    @abstractmethod
+    def release(self):
+        pass
+
     def __enter__(self):
         self.acquire()
 
@@ -36,14 +59,18 @@ class ManabiContextLockMixin:
 
 
 class ManabiShelfLock(ManabiContextLockMixin):
-    def __init__(self, storage_path, storage_object):
+    _storage_object: Callable[[], "ManabiShelfLockLockStorage"]
+
+    def __init__(self, storage_path, storage_object: "ManabiShelfLockLockStorage"):
+        print("foundme", type(storage_object))
         self._storage_path = storage_path
-        self._storage_object = weakref.ref(storage_object)
+        # type manually checked
+        self._storage_object = weakref.ref(storage_object)  # type: ignore
         self._semaphore = 0
         self._lock_file = open(f"{storage_path}.lock", "wb+")
         self._fd = self._lock_file.fileno()
         self.acquire_write = self.acquire_read = self.acquire
-        self._id = None
+        self._id = -1
 
     def acquire(self):
         tid = threading.get_ident()
@@ -119,12 +146,15 @@ class ManabiShelfLockLockStorage(LockStorageDict, ManabiTimeoutMixin):
 
 
 class ManabiPostgresLock(ManabiContextLockMixin):
-    def __init__(self, storage):
+    _storage_object: Callable[[], "ManabiDbLockStorage"]
+
+    def __init__(self, storage_object: "ManabiDbLockStorage"):
         self._id = None
-        self.storage = weakref.ref(storage)
+        # type manually checked
+        self._storage_object = weakref.ref(storage_object)  # type: ignore
         self.acquire_write = self.acquire_read = self.acquire
         self._semaphore = 0
-        self._id = None
+        self._id = -1
 
     def acquire(self):
         tid = threading.get_ident()
@@ -133,7 +163,9 @@ class ManabiPostgresLock(ManabiContextLockMixin):
         self._id = tid
         if self._semaphore == 0:
             _logger.info(f"{tid} acquire")
-            self.storage().execute("LOCK TABLE manabi_lock IN ACCESS EXCLUSIVE MODE")
+            self._storage_object().execute(
+                "LOCK TABLE manabi_lock IN ACCESS EXCLUSIVE MODE"
+            )
         self._semaphore += 1
 
     def release(self):
@@ -148,12 +180,15 @@ class ManabiPostgresLock(ManabiContextLockMixin):
         self._semaphore -= 1
         if self._semaphore == 0:
             _logger.info(f"{tid} release")
-            self.storage()._connection.commit()
+            self._storage_object()._connection.commit()
 
 
 class ManabiPostgresDict(MutableMapping):
-    def __init__(self, storage, lock):
-        self.storage = weakref.ref(storage)
+    _storage_object: Callable[[], "ManabiDbLockStorage"]
+
+    def __init__(self, storage_object: "ManabiDbLockStorage", lock):
+        # type manually checked
+        self._storage_object = weakref.ref(storage_object)  # type: ignore
         self._lock = lock
 
     @staticmethod
@@ -172,28 +207,28 @@ class ManabiPostgresDict(MutableMapping):
 
     def cleanup(self):
         with self._lock:
-            self.storage().execute("DELETE FROM manabi_lock;")
+            self._storage_object().execute("DELETE FROM manabi_lock;")
 
     def __len__(self):
         with self._lock:
-            cursor = self.storage().execute("SELECT count(*) FROM manabi_lock")
+            cursor = self._storage_object().execute("SELECT count(*) FROM manabi_lock")
             return int(cursor.fetchone()[0])
 
     def __iter__(self):
         with self._lock:
-            cursor = self.storage().execute("SELECT token FROM manabi_lock")
+            cursor = self._storage_object().execute("SELECT token FROM manabi_lock")
             for token in cursor.fetchall():
                 yield token[0]
 
     def __delitem__(self, token):
         with self._lock:
-            self.storage().execute(
+            self._storage_object().execute(
                 "DELETE FROM manabi_lock WHERE token = %s", (str(token),)
             )
 
     def __contains__(self, token):
         with self._lock:
-            cursor = self.storage().execute(
+            cursor = self._storage_object().execute(
                 "SELECT 1 FROM manabi_lock WHERE token = %s", (str(token),)
             )
             if cursor.fetchone() is None:
@@ -205,7 +240,7 @@ class ManabiPostgresDict(MutableMapping):
         with self._lock:
             self.decode_lock(lock)
             json_lock = json.dumps(lock)
-            self.storage().execute(
+            self._storage_object().execute(
                 """
                     INSERT INTO manabi_lock(token, data) VALUES (%(token)s, %(data)s)
                         ON CONFLICT(token) DO
@@ -219,7 +254,7 @@ class ManabiPostgresDict(MutableMapping):
 
     def __getitem__(self, token):
         with self._lock:
-            cursor = self.storage().execute(
+            cursor = self._storage_object().execute(
                 "SELECT data FROM manabi_lock WHERE token = %s", (str(token),)
             )
             lock = cursor.fetchone()
@@ -231,11 +266,12 @@ class ManabiPostgresDict(MutableMapping):
 
 
 class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
+    _connection: PsycopConnection
+
     def __init__(self, refresh: float, postgres_dsn: str):
         super().__init__()
         self._postgres_dsn = postgres_dsn
         self.max_timeout = refresh / 2
-        self._connection = None
         self.connect()
         self._lock = ManabiPostgresLock(self)
         self._dict = ManabiPostgresDict(self, self._lock)

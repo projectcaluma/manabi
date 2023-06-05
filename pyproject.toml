@@ -76,6 +76,9 @@ build_command = "poetry build"
 commit_subject = "chore(release): v{version}"
 commit_author = "github-actions <github-actions@github.com>"
 
+[tool.mypy]
+check_untyped_defs = true
+
 # No flake8 pyproject support yet, please edit .flake8
 
 [build-system]

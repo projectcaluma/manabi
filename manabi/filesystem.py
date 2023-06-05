@@ -14,7 +14,11 @@ from .token import Token
 class ManabiFolderResource(FolderResource):
     def get_member_names(self):
         token: Token = self.environ["manabi.token"]
-        path = Path(self._file_path, token.path)
+        # type manually checked
+        token_path: Path = token.path  # type: ignore
+        if not token_path:
+            return []
+        path = Path(self._file_path, token_path)
         if path.exists():
             return [str(token.path)]
         else:
