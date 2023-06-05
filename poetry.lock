@@ -1390,6 +1390,24 @@ tomli = {version = "*", markers = "python_version < \"3.11\""}
 dev = ["flake8", "isort (>=5.0)", "mypy", "pre-commit", "pytest", "types-pkg-resources", "types-setuptools"]
 
 [[package]]
+name = "python-lsp-isort"
+version = "0.1"
+description = "isort plugin for the Python LSP Server"
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "python-lsp-isort-0.1.tar.gz", hash = "sha256:f02948bc8e7549905032100e772f03464f7548afa96f07d744ff1f93cc58339a"},
+]
+
+[package.dependencies]
+isort = ">=5.0"
+python-lsp-server = "*"
+
+[package.extras]
+dev = ["pytest"]
+
+[[package]]
 name = "python-lsp-jsonrpc"
 version = "1.0.0"
 description = "JSON RPC 2.0 server library"
@@ -2017,4 +2035,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "a42324fbf37e69b4990568b87ba6b5a866dd71957cf8c8bb9d2c32c29a246644"
+content-hash = "849ccdad56de3d7841f1e72faa5f7ae43e428c58275bda61be376701d9f8588b"
