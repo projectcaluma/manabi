@@ -62,7 +62,6 @@ class ManabiShelfLock(ManabiContextLockMixin):
     _storage_object: Callable[[], "ManabiShelfLockLockStorage"]
 
     def __init__(self, storage_path, storage_object: "ManabiShelfLockLockStorage"):
-        print("foundme", type(storage_object))
         self._storage_path = storage_path
         # type manually checked
         self._storage_object = weakref.ref(storage_object)  # type: ignore
