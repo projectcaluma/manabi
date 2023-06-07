@@ -8,9 +8,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 import base62  # type: ignore
 from attr import attrib, dataclass
 
+from .type_alias import TypeType
+
 
 def cattrib(
-    attrib_type: Optional[type] = None,
+    attrib_type: Optional[TypeType] = None,
     check: Optional[Callable] = None,
     optional: bool = False,
     **kwargs,
