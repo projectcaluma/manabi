@@ -3,11 +3,13 @@ import struct
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, Union
 
+import umsgpack  # type: ignore
 from attr import Factory, dataclass
 from branca import Branca  # type: ignore
 
+from .type_alias import OptionalProp, PropType
 from .util import cattrib, from_string
 
 
@@ -57,6 +59,7 @@ class State(Enum):
 class Token:
     key: Key = cattrib(Key)
     path: Optional[Path] = cattrib(Path, default=None)
+    payload: OptionalProp = cattrib(OptionalProp, default=None)
     timestamp: Optional[int] = cattrib(
         int, default=Factory(lambda: now()), optional=True
     )
@@ -76,15 +79,20 @@ class Token:
             raise ValueError("path may not be None")
         if self.timestamp is None:
             self.timestamp = now()
-        self.ciphertext = _encode(self.key.data, str(self.path), self.timestamp)
+        self.ciphertext = _encode(
+            self.key.data,
+            str(self.path),
+            self.payload,
+            self.timestamp,
+        )
         return self.ciphertext
 
     @classmethod
     def from_token(cls, token: "Token", timestamp: Optional[int] = None) -> "Token":
         if timestamp is None:
-            return cls(token.key, token.path, now())
+            return cls(token.key, token.path, token.payload, now())
         else:
-            return cls(token.key, token.path, timestamp)
+            return cls(token.key, token.path, token.payload, timestamp)
 
     @classmethod
     def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":
@@ -95,10 +103,10 @@ class Token:
         except (struct.error, ValueError):
             return cls(key, None, None)
         try:
-            token_path = Path(branca.decode(ciphertext).decode("UTF-8"))
+            token_path, token_payload = _decode(branca, ciphertext)
         except RuntimeError:
             return cls(key, None, timestamp)
-        return cls(key, token_path, timestamp, ciphertext)
+        return cls(key, token_path, token_payload, timestamp, ciphertext)
 
     def check(self, ttl: Optional[int] = None) -> State:
         if self.path is None or self.timestamp is None:
@@ -120,13 +128,27 @@ class Token:
         return self.check(ttl.initial)
 
 
-def _encode(key: bytes, path: str, now: Optional[int] = None) -> str:
+def _encode(
+    key: bytes,
+    path: str,
+    payload: OptionalProp = None,
+    now: Optional[int] = None,
+) -> str:
     f = Branca(key)
-    p = path.encode("UTF-8")
+    p = umsgpack.packb((path.encode("UTF-8"), payload))
     ciphertext = f.encode(p, now)
     return ciphertext
 
 
-def _decode(key: bytes, ciphertext: str, ttl=None) -> str:
-    f = Branca(key)
-    return f.decode(ciphertext, ttl).decode("UTF-8")
+def _decode(
+    key: Union[bytes, Branca],
+    ciphertext: str,
+    ttl=None,
+) -> Tuple[Path, PropType]:
+    if isinstance(key, Branca):
+        f = key
+    else:
+        f = Branca(key)
+    tpb, token_payload = umsgpack.unpackb(f.decode(ciphertext, ttl))
+    token_path = tpb.decode("UTF-8")
+    return Path(token_path), token_payload

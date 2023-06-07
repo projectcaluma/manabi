@@ -1,18 +1,28 @@
 import shutil
 from os import environ
 from pathlib import Path
+from string import printable
 from subprocess import PIPE, run
 
 import pytest
 from branca import Branca  # type: ignore
-from hypothesis import assume, given  # type: ignore
-from hypothesis.strategies import binary, booleans, text  # type: ignore
+from hypothesis import assume, given, strategies as st
 
 from . import mock
 from .token import TTL, Config, Key, State, Token, _decode, _encode, now
+from .type_alias import OptionalProp
 from .util import from_string
 
 _key = b"\xef\xc5\x07\xee}\x7f6\x11L\xb0\xc3155x\x11\xce.\x8e\xb96\xba\xce\x8b\x17-\xfc\x96]\xf8%\xd8"
+
+msgpack = st.recursive(
+    st.none()
+    | st.booleans()
+    | st.floats(allow_nan=False)
+    | st.text(printable, max_size=32),
+    lambda children: st.lists(children) | st.dictionaries(st.text(printable), children),
+    max_leaves=8,
+)
 
 
 def test_key_validator(config):
@@ -114,15 +124,15 @@ def test_token_creation(config):
     assert token.check(-10) == State.invalid
 
 
-def token_roundtrip(tamper: bool, expire: bool, path: str):
+def token_roundtrip(tamper: bool, expire: bool, path: str, payload: OptionalProp):
     with mock.with_config() as config:
         key = Config.from_dictionary(config).key.data
     ttl = None
     if expire:
         ttl = 1
-        data = _encode(key, path, 1)
+        data = _encode(key, path, payload, 1)
     else:
-        data = _encode(key, path)
+        data = _encode(key, path, payload)
     if tamper:
         if data[3] == "f":
             data = data[0:3] + "g" + data[4:]
@@ -133,22 +143,28 @@ def token_roundtrip(tamper: bool, expire: bool, path: str):
         with pytest.raises(RuntimeError):
             _decode(key, data, ttl)
     else:
-        assert _decode(key, data, ttl) == path
+        assert _decode(key, data, ttl) == (Path(path), payload)
 
 
 @pytest.mark.parametrize("tamper", (True, False))
 @pytest.mark.parametrize("expire", (True, False))
 @pytest.mark.parametrize("path", ("hello", "asdf.docx"))
-def test_token_roundtrip(tamper: bool, expire: bool, path: str):
-    token_roundtrip(tamper, expire, path)
+@pytest.mark.parametrize("payload", ("hello", 3, [3, 3], None))
+def test_token_roundtrip(tamper: bool, expire: bool, path: str, payload: OptionalProp):
+    token_roundtrip(tamper, expire, path, payload)
 
 
-@given(booleans(), booleans(), text(min_size=1, max_size=32))
-def test_token_roundtrip_hyp(tamper: bool, expire: bool, path: str):
-    token_roundtrip(tamper, expire, path)
+@given(st.booleans(), st.booleans(), st.text(min_size=1, max_size=32), msgpack)
+def test_token_roundtrip_hyp(
+    tamper: bool,
+    expire: bool,
+    path: str,
+    payload: OptionalProp,
+):
+    token_roundtrip(tamper, expire, path, payload)
 
 
-@given(binary(min_size=1, max_size=32))
+@given(st.binary(min_size=1, max_size=32))
 def test_branca_roundtrip(string: bytes):
     with mock.with_config() as config:
         key = config["manabi"]["key"]
@@ -180,7 +196,7 @@ def test_other_impl_decode(cargo):
 # https://github.com/return/branca/issues/10
 # hypothesis doesn't like fixtures anymore
 @pytest.mark.skipif(cargo_build(), reason="needs rustc and cargo")
-@given(text(min_size=1))
+@given(st.text(min_size=1))
 def test_other_impl_decode_hyp(cargo, string: str):
     bstr = string.encode("UTF-8")
     assume(not bstr.startswith(b"\x00"))
