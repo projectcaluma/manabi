@@ -12,8 +12,8 @@ from typing import Callable
 import psycopg2.extensions
 from psycopg2 import InterfaceError, OperationalError, connect
 from psycopg2.extensions import connection as PsycopgConnection
-from wsgidav.lock_man.lock_storage import LockStorageDict  # type: ignore
-from wsgidav.util import get_module_logger  # type: ignore
+from wsgidav.lock_man.lock_storage import LockStorageDict
+from wsgidav.util import get_module_logger
 
 _logger = get_module_logger(__name__)
 
@@ -93,8 +93,9 @@ class ManabiShelfLock(ManabiContextLockMixin):
         self._semaphore -= 1
         if self._semaphore == 0:
             storage_object = self._storage_object()
-            storage_object._dict.close()
-            storage_object._dict = None
+            if storage_object._dict is not None:
+                storage_object._dict.close()
+                storage_object._dict = None
             fcntl.flock(self._fd, fcntl.LOCK_UN)
         self._id = threading.get_ident()
 
@@ -104,7 +105,8 @@ class ManabiShelfLockLockStorage(LockStorageDict, ManabiTimeoutMixin):
         super().__init__()
         self.max_timeout = refresh / 2
         self._storage = storage
-        self._lock = ManabiShelfLock(storage, self)
+        # this is a cast
+        self._lock: ManabiShelfLock = ManabiShelfLock(storage, self)  # type:ignore
 
     def open(self):
         pass
@@ -272,7 +274,8 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         self._postgres_dsn = postgres_dsn
         self.max_timeout = refresh / 2
         self.connect()
-        self._lock = ManabiPostgresLock(self)
+        # this is a cast
+        self._lock: ManabiPostgresLock = ManabiPostgresLock(self)  # type: ignore
         self._dict = ManabiPostgresDict(self, self._lock)
 
     def connect(self):

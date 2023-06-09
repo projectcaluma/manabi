@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Workaround mpyp not type-checking wsgidav
+        run: poetry run python -m manabi.mypy_fix
+
       - name: Run flake8
         run: poetry run flake8 manabi
 
@@ -100,4 +103,4 @@ jobs:
         run: poetry run python manabi_django/manage.py migrate manabi_migrations
 
       - name: Run tests
-        run: poetry run pytest manabi
+        run: poetry run pytest -v manabi

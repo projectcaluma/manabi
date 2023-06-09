@@ -3,7 +3,7 @@ from http.cookies import SimpleCookie
 from typing import Any, Callable, Dict, List
 from unittest.mock import MagicMock
 
-from wsgidav.mw.base_mw import BaseMiddleware  # type: ignore
+from wsgidav.mw.base_mw import BaseMiddleware
 
 from .token import Config, State, Token
 from .util import AppInfo, get_rfc1123_time, set_cookie
