@@ -1,12 +1,8 @@
 from functools import partial
 from typing import Any, Callable, Dict, List, Tuple
 
-from wsgidav.mw.base_mw import BaseMiddleware  # type: ignore
-from wsgidav.util import (  # type: ignore
-    SubAppStartResponse,
-    get_module_logger,
-    init_logging,
-)
+from wsgidav.mw.base_mw import BaseMiddleware
+from wsgidav.util import SubAppStartResponse, get_module_logger, init_logging
 
 _logger = get_module_logger(__name__)
 

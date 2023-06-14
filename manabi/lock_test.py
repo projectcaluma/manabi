@@ -9,7 +9,7 @@ from urllib import request
 from urllib.error import HTTPError
 
 import requests
-from wsgidav.util import get_module_logger  # type: ignore
+from wsgidav.util import get_module_logger
 
 from manabi import lock as mlock
 

@@ -1,6 +1,6 @@
-from wsgidav import http_authenticator  # type: ignore
-from wsgidav.http_authenticator import HTTPAuthenticator  # type: ignore
-from wsgidav.wsgidav_app import WsgiDAVApp  # type: ignore
+from wsgidav import http_authenticator
+from wsgidav.http_authenticator import HTTPAuthenticator
+from wsgidav.wsgidav_app import WsgiDAVApp
 
 from .auth import ManabiAuthenticator
 
@@ -8,7 +8,7 @@ from .auth import ManabiAuthenticator
 class ManabiDAVApp(WsgiDAVApp):
     def __init__(self, config):
         super().__init__(config)
-        self.lock_manager._lock = config["lock_storage"]._lock
+        self.lock_manager._lock = config["lock_storage"]._lock  # type: ignore
 
 
 class MetaFakeHTTPAuthenticator(type(http_authenticator.HTTPAuthenticator)):  # type: ignore
@@ -31,7 +31,7 @@ class FakeHTTPAuthenticator(
 # Using a metaclass is slightly less intrusive than just replacing HTTPAuthenticator
 # with ManabiAuthenticator. If http_authenticator.HTTPAuthenticator is created it is
 # still a HTTPAuthenticator.
-http_authenticator.HTTPAuthenticator = FakeHTTPAuthenticator
+http_authenticator.HTTPAuthenticator = FakeHTTPAuthenticator  # type: ignore
 
 
 def keygen() -> None:

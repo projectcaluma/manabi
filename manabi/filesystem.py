@@ -1,12 +1,8 @@
 from pathlib import Path
 from typing import Any, Dict
 
-from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError  # type: ignore
-from wsgidav.fs_dav_provider import (  # type: ignore
-    FileResource,
-    FilesystemProvider,
-    FolderResource,
-)
+from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError
+from wsgidav.fs_dav_provider import FileResource, FilesystemProvider, FolderResource
 
 from .token import Token
 

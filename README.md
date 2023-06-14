@@ -76,9 +76,10 @@ dav_app = ManabiDAVApp(config)
 Enable dev-env:
 
 ```bash
-pyenv install 3.10.2
-poetry env use $HOME/.pyenv/versions/3.10.2/bin/python3.10
+pyenv install 3.11.4
+poetry env use $HOME/.pyenv/versions/3.11.4/bin/python3.11
 poetry install
+poetry run python -m manabi.mypy_fix
 poetry shell
 docker-compose up -d db
 (cd manabi_django && ./manage.py migrate manabi_migrations)
