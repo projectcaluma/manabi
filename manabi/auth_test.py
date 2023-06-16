@@ -1,16 +1,11 @@
+from pathlib import Path
 from typing import Generator, cast
 from urllib.parse import quote
 
 import pytest
 import requests
-from hypothesis import assume, example, given  # type: ignore
-from hypothesis.strategies import (  # type: ignore
-    binary,
-    booleans,
-    lists,
-    permutations,
-    text,
-)
+from hypothesis import assume, example, given
+from hypothesis.strategies import binary, booleans, lists, permutations, text
 
 from . import mock
 
@@ -22,10 +17,26 @@ def mod_server() -> Generator:
             yield
 
 
+def format_req(url):
+    try:
+        path = str(Path(f"/dav/{url}").resolve())
+    except ValueError:
+        # This means a broken path, so we throw it at the webserver
+        path = f"/dav/{url}"
+    return path, f"http://localhost:8081{path}"
+
+
+def check_res(path, res):
+    if path.startswith("/dav"):
+        assert res.status_code == 403
+    else:
+        assert res.status_code == 404
+
+
 def dumb_force(url):
-    req = f"http://localhost:8081/dav/{url}"
+    path, req = format_req(url)
     res = requests.get(req)
-    assert res.status_code == 403
+    check_res(path, res)
 
 
 @given(text())
@@ -46,9 +57,9 @@ def test_dumb_quote_force(mod_server, url):
 
 def structured_force(url, sep="/"):
     url = sep.join(url)
-    req = f"http://localhost:8081/dav/{url}"
+    path, req = format_req(url)
     res = requests.get(req)
-    assert res.status_code == 403
+    check_res(path, res)
 
 
 @given(lists(text()))
@@ -89,9 +100,9 @@ def force_with_token(url, past, do_quote=False, sep="/"):
         elif do_quote:
             url[i] = quote(url[i])
     url = sep.join(url)
-    req = f"http://localhost:8081/dav/{url}"
+    path, req = format_req(url)
     res = requests.get(req)
-    assert res.status_code == 403
+    check_res(path, res)
 
 
 @given(lists(text()).flatmap(lambda x: permutations(x + [cast(str, None)])), booleans())
