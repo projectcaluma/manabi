@@ -52,6 +52,15 @@ def lock_storage(request, postgres_dsn):
 
 
 @pytest.fixture()
+def pre_write_hook():
+    try:
+        mock._pre_write_hook = "http://127.0.0.1/pre_write_hook"
+        yield
+    finally:
+        mock._pre_write_hook = None
+
+
+@pytest.fixture()
 def server_dir() -> Path:
     return mock.get_server_dir()
 

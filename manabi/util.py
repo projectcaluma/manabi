@@ -1,4 +1,5 @@
 import calendar
+import threading
 from datetime import datetime
 from email.utils import formatdate
 from http.cookies import SimpleCookie
@@ -6,9 +7,21 @@ from inspect import getsource
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import base62  # type: ignore
+import requests
 from attr import attrib, dataclass
 
 from .type_alias import TypeType
+
+_local_session = threading.local()
+
+
+def requests_session() -> requests.Session:
+    """Wsgidav uses threading, lets get a session per thread."""
+    local_dict = _local_session.__dict__
+    session = local_dict.get("session")
+    if not session:
+        local_dict["session"] = session = requests.Session()
+    return session
 
 
 def cattrib(
@@ -23,7 +36,14 @@ def cattrib(
     def handler(object, attribute, value):
         if value is None and optional:
             return value
-        if attrib_type is not None and not isinstance(value, attrib_type):
+        # Some python versions cannot do the check assume True
+        is_inst = True
+        try:
+            if attrib_type is not None:
+                is_inst = isinstance(value, attrib_type)
+        except TypeError:
+            pass
+        if not is_inst:
             raise TypeError(
                 f"{attribute.name} ({type(value)}) is not of type {attrib_type}"
             )

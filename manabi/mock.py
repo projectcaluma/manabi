@@ -9,6 +9,7 @@ from threading import Thread
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, Union
 from unittest import mock as unitmock
 
+import requests_mock
 from cheroot import wsgi  # type: ignore
 from wsgidav.dir_browser import WsgiDavDirBrowser
 from wsgidav.error_printer import ErrorPrinter
@@ -20,7 +21,7 @@ from .auth import ManabiAuthenticator
 from .filesystem import ManabiProvider
 from .lock import ManabiDbLockStorage as ManabiDbLockStorageOrig
 from .log import HeaderLogger, ResponseLogger
-from .token import Key, Token, now
+from .token import Config, Key, Token, now
 from .util import get_rfc1123_time
 
 _servers: Dict[Tuple[str, int], wsgi.Server] = dict()
@@ -47,7 +48,27 @@ def get_server_dir():
     return _server_dir
 
 
-# psycopg2.extensions.connection
+_pre_write_hook: Optional[str] = None
+
+
+@contextmanager
+def with_pre_write_hook(config: Dict[str, Any]):
+    cfg = Config.from_dictionary(config)
+    if not _pre_write_hook:
+        return
+
+    def check_token(request, context):
+        token = Token.from_ciphertext(cfg.key, request.text)
+        if token.check():
+            context.status_code = 200
+        else:
+            context.status_code = 403
+
+    with requests_mock.Mocker(real_http=True) as m:
+        m.post(_pre_write_hook, text=check_token)
+        yield
+
+
 def get_config(server_dir: Path, lock_storage: Union[Path, str]):
     refresh = 600
     base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8081"
@@ -57,12 +78,13 @@ def get_config(server_dir: Path, lock_storage: Union[Path, str]):
     else:
         lock_obj = mlock.ManabiDbLockStorage(refresh, lock_storage)
     return {
+        "pre_write_hook": _pre_write_hook,
         "host": "0.0.0.0",
         "port": 8081,
         "mount_path": "/dav",
         "lock_storage": lock_obj,
         "provider_mapping": {
-            "/": ManabiProvider(server_dir),
+            "/": ManabiProvider(server_dir, pre_write_hook=_pre_write_hook),
         },
         "middleware_stack": [
             HeaderLogger,
