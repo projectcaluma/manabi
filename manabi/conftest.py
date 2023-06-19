@@ -1,15 +1,28 @@
+import os
 import shutil
 from pathlib import Path
 from subprocess import run
 from typing import Any, Dict, Generator
 from unittest import mock as unitmock
 
-import pytest  # type: ignore
+import pytest
+from hypothesis import settings
 from psycopg2 import connect
 
 from . import mock
 from .log import verbose_logging
 from .mock import MockManabiDbLockStorage
+
+
+def configure_hypothesis():
+    settings.register_profile(
+        "fuzzing", print_blob=True, max_examples=10000, deadline=None
+    )
+    settings.register_profile("basic", print_blob=True)
+    settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "basic"))
+
+
+configure_hypothesis()
 
 
 @pytest.fixture()
@@ -49,6 +62,15 @@ def lock_storage(request, postgres_dsn):
     else:
         with mock.lock_storage() as storage:
             yield storage
+
+
+@pytest.fixture()
+def pre_write_hook():
+    try:
+        mock._pre_write_hook = "http://127.0.0.1/pre_write_hook"
+        yield
+    finally:
+        mock._pre_write_hook = None
 
 
 @pytest.fixture()

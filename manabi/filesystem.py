@@ -5,6 +5,7 @@ from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError
 from wsgidav.fs_dav_provider import FileResource, FilesystemProvider, FolderResource
 
 from .token import Token
+from .util import requests_session
 
 
 class ManabiFolderResource(FolderResource):
@@ -50,6 +51,11 @@ class ManabiFolderResource(FolderResource):
 
 
 class ManabiFileResource(FileResource):
+    def __init__(self, path, environ, file_path, pre_write_hook=None):
+        self._pre_write_hook = pre_write_hook
+        self._token = environ["manabi.token"]
+        super().__init__(path, environ, file_path)
+
     def delete(self):
         raise DAVError(HTTP_FORBIDDEN)
 
@@ -62,8 +68,24 @@ class ManabiFileResource(FileResource):
     def move_recursive(self, dest_path):
         raise DAVError(HTTP_FORBIDDEN)
 
+    def begin_write(self, *, content_type):
+        pre = self._pre_write_hook
+        token = self._token
+        if pre and token:
+            session = requests_session()
+            session.post(pre, data=token.encode())
+        # The webhhook returned and hopefully created a new version.
+        # Now we can save.
+        return super().begin_write(content_type=content_type)
+
 
 class ManabiProvider(FilesystemProvider):
+    def __init__(
+        self, root_folder, *, readonly=False, shadow=None, pre_write_hook=None
+    ):
+        self._pre_write_hook = pre_write_hook
+        super().__init__(root_folder, readonly=readonly, shadow=shadow)
+
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
         token: Token = environ["manabi.token"]
         dir_access = environ["manabi.dir_access"]
@@ -77,6 +99,11 @@ class ManabiProvider(FilesystemProvider):
             path = token.path_as_url()
             fp = self._loc_to_file_path(path, environ)
             if Path(fp).exists():
-                return ManabiFileResource(path, environ, fp)
+                return ManabiFileResource(
+                    path,
+                    environ,
+                    fp,
+                    self._pre_write_hook,
+                )
             else:
                 return None
