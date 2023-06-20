@@ -15,6 +15,7 @@ from .mock import MockManabiDbLockStorage
 
 
 def configure_hypothesis():
+    settings.register_profile("ci", print_blob=True, deadline=None)
     settings.register_profile(
         "fuzzing", print_blob=True, max_examples=10000, deadline=None
     )
