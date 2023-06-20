@@ -84,6 +84,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set hypothesis to ci-profile
+        run: echo "HYPOTHESIS_PROFILE=ci" >> $GITHUB_ENV
+
       - name: Setup environment
         run: sudo apt-get install -y libsodium23
 
