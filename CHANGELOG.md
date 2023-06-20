@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.0 (2023-06-20)
+
+### Feature
+* feat(hook): add pre_write_hook ([`4de0ad6`](https://github.com/projectcaluma/manabi/commit/4de0ad65b95bbd0be5fa19ed986660233fcd6b6c))
+
+### Fix
+* fix: fuzzying found relative urls like '..' ([`e74b263`](https://github.com/projectcaluma/manabi/commit/e74b2638f9413b339988dea52eb2b8747262a2dc))
+
+### Feature
+* feat(hook): add payload to token ([`7679f9d`](https://github.com/projectcaluma/manabi/commit/7679f9d2d1a87fd933c5af109bfb1ec244a0c480))
+
 ## v0.7.1 (2022-12-02)
 
 ### Fix
