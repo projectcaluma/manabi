@@ -1,4 +1,7 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from .token import Token
 
 try:
     from typing import TypeAlias
@@ -18,3 +21,4 @@ PropType = Union[
     bool,
 ]
 OptionalProp = Optional[PropType]
+PreWriteType = Callable[["Token"], bool]
