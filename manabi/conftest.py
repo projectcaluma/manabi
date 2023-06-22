@@ -75,6 +75,15 @@ def pre_write_hook():
 
 
 @pytest.fixture()
+def pre_write_callback():
+    try:
+        mock._pre_write_callback = mock.check_token
+        yield mock.check_token
+    finally:
+        mock._pre_write_callback = None
+
+
+@pytest.fixture()
 def server_dir() -> Path:
     return mock.get_server_dir()
 

@@ -22,6 +22,7 @@ from .filesystem import ManabiProvider
 from .lock import ManabiDbLockStorage as ManabiDbLockStorageOrig
 from .log import HeaderLogger, ResponseLogger
 from .token import Config, Key, Token, now
+from .type_alias import PreWriteType
 from .util import get_rfc1123_time
 
 _servers: Dict[Tuple[str, int], wsgi.Server] = dict()
@@ -48,16 +49,28 @@ def get_server_dir():
     return _server_dir
 
 
+_check_token_return = True
+
+
+def check_token(token: Token) -> bool:
+    assert token.check()
+    return _check_token_return
+
+
 _pre_write_hook: Optional[str] = None
 
 
 @contextmanager
-def with_pre_write_hook(config: Dict[str, Any]):
-    cfg = Config.from_dictionary(config)
+def with_pre_write_hook(config: Dict[str, Any], status_code=None):
     if not _pre_write_hook:
         return
 
+    cfg = Config.from_dictionary(config)
+
     def check_token(request, context):
+        if status_code:
+            context.status_code = status_code
+            return
         token = Token.from_ciphertext(cfg.key, request.text)
         if token.check():
             context.status_code = 200
@@ -67,6 +80,9 @@ def with_pre_write_hook(config: Dict[str, Any]):
     with requests_mock.Mocker(real_http=True) as m:
         m.post(_pre_write_hook, text=check_token)
         yield
+
+
+_pre_write_callback: Optional[PreWriteType] = None
 
 
 def get_config(server_dir: Path, lock_storage: Union[Path, str]):
@@ -79,12 +95,17 @@ def get_config(server_dir: Path, lock_storage: Union[Path, str]):
         lock_obj = mlock.ManabiDbLockStorage(refresh, lock_storage)
     return {
         "pre_write_hook": _pre_write_hook,
+        "pre_write_callback": _pre_write_callback,
         "host": "0.0.0.0",
         "port": 8081,
         "mount_path": "/dav",
         "lock_storage": lock_obj,
         "provider_mapping": {
-            "/": ManabiProvider(server_dir, pre_write_hook=_pre_write_hook),
+            "/": ManabiProvider(
+                server_dir,
+                pre_write_hook=_pre_write_hook,
+                pre_write_callback=_pre_write_callback,
+            ),
         },
         "middleware_stack": [
             HeaderLogger,

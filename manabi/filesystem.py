@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError
 from wsgidav.fs_dav_provider import FileResource, FilesystemProvider, FolderResource
 
 from .token import Token
+from .type_alias import PreWriteType
 from .util import requests_session
 
 
@@ -51,8 +52,17 @@ class ManabiFolderResource(FolderResource):
 
 
 class ManabiFileResource(FileResource):
-    def __init__(self, path, environ, file_path, pre_write_hook=None):
+    def __init__(
+        self,
+        path,
+        environ,
+        file_path,
+        *,
+        pre_write_hook: Optional[str] = None,
+        pre_write_callback: Optional[PreWriteType] = None,
+    ):
         self._pre_write_hook = pre_write_hook
+        self._pre_write_callback = pre_write_callback
         self._token = environ["manabi.token"]
         super().__init__(path, environ, file_path)
 
@@ -69,21 +79,36 @@ class ManabiFileResource(FileResource):
         raise DAVError(HTTP_FORBIDDEN)
 
     def begin_write(self, *, content_type):
-        pre = self._pre_write_hook
         token = self._token
-        if pre and token:
-            session = requests_session()
-            session.post(pre, data=token.encode())
-        # The webhhook returned and hopefully created a new version.
-        # Now we can save.
+        if token:
+            pre_hook = self._pre_write_hook
+            pre_callback = self._pre_write_callback
+
+            if pre_hook:
+                session = requests_session()
+                res = session.post(pre_hook, data=token.encode())
+                if res.status_code != 200:
+                    raise DAVError(HTTP_FORBIDDEN)
+            if pre_callback:
+                if not pre_callback(token):
+                    raise DAVError(HTTP_FORBIDDEN)
+            # The hook returned and hopefully created a new version.
+            # Now we can save.
         return super().begin_write(content_type=content_type)
 
 
 class ManabiProvider(FilesystemProvider):
     def __init__(
-        self, root_folder, *, readonly=False, shadow=None, pre_write_hook=None
+        self,
+        root_folder,
+        *,
+        readonly=False,
+        shadow=None,
+        pre_write_hook: Optional[str] = None,
+        pre_write_callback: Optional[PreWriteType] = None,
     ):
         self._pre_write_hook = pre_write_hook
+        self._pre_write_callback = pre_write_callback
         super().__init__(root_folder, readonly=readonly, shadow=shadow)
 
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
@@ -103,7 +128,8 @@ class ManabiProvider(FilesystemProvider):
                     path,
                     environ,
                     fp,
-                    self._pre_write_hook,
+                    pre_write_hook=self._pre_write_hook,
+                    pre_write_callback=self._pre_write_callback,
                 )
             else:
                 return None
