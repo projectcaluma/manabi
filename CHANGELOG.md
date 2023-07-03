@@ -2,6 +2,11 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2023-07-03)
+
+### Feature
+* Add pre_write_callback and hook/callback approve write ([`08b6a6f`](https://github.com/projectcaluma/manabi/commit/08b6a6fe2ea76e006de17cc0a7f0be35f2b1e1f6))
+
 ## v1.0.0 (2023-06-20)
 
 ### Feature
