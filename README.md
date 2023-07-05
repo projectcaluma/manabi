@@ -41,14 +41,13 @@ an unauthorized third party.
   refresh the lock. Consequently, we leverage this mechanism to also refresh the
   token.
 
-**pre_write_hook**: We provide an optional pre-write-hook feature that enhances
-the API's capabilities by adding a versioning system. The hook is invoked with
-the token as an argument **prior** to the document being saved using WebDAV-PUT.
-The API has the ability to verify this token and subsequently create a new
-version of the document. Once the hook operation is successfully completed,
-Manabi takes over and saves the document.
-
-A post-write-hook is not implemented, if you need one, please open an issue.
+**cb_hook_config**: We provide an optional write-hooks/callbacks feature that
+enhances the API's capabilities by adding a versioning system. The pre-write-
+hook/callback is invoked with the token as an argument **prior** to the document
+being saved using WebDAV-PUT. The API has the ability to verify this token and
+subsequently create a new version of the document. Once the hook operation is
+successfully completed, Manabi takes over and saves the document. Manabi then
+continues and invokes the post-write-hook/callback.
 
 ## Install
 
@@ -102,12 +101,20 @@ a computer, tokens should be expired by the time an adversary gets them.
 ```python
 from manabi import ManabiDAVApp
 
+# All hooks and callbacks are optional
+cb_hook_config = CallbackHookConfig(
+    pre_write_hook=_pre_write_hook,
+    pre_write_callback=_pre_write_callback,
+    post_write_hook=_post_write_hook,
+    post_write_callback=_post_write_callback,
+)
+
 postgres_dsn = "dbname=manabi user=manabi host=localhost password=manabi"
 config = {
     "mount_path": "/dav",
     "lock_storage": ManabiDbLockStorage(refresh, postgres_dsn),
     "provider_mapping": {
-        "/": ManabiProvider(settings.MEDIA_ROOT, pre_write_hook="http://127.0.0.1/hook"),
+        "/": ManabiProvider(settings.MEDIA_ROOT, cb_hook_config=cb_hook_config),
     },
     "middleware_stack": [
         WsgiDavDebugFilter,

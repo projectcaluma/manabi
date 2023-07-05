@@ -21,4 +21,4 @@ PropType = Union[
     bool,
 ]
 OptionalProp = Optional[PropType]
-PreWriteType = Callable[["Token"], bool]
+WriteType = Callable[["Token"], bool]
