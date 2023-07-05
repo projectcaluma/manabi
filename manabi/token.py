@@ -13,6 +13,14 @@ from .type_alias import OptionalProp, PropType
 from .util import cattrib, from_string
 
 
+class DecodingError(Exception):
+    pass
+
+
+class EncodingError(Exception):
+    pass
+
+
 def now() -> int:
     return calendar.timegm(datetime.utcnow().timetuple())
 
@@ -104,7 +112,8 @@ class Token:
             return cls(key, None, None)
         try:
             token_path, token_payload = _decode(branca, ciphertext)
-        except RuntimeError:
+        except DecodingError:
+            # Handle decoding errors by creating a invalid token
             return cls(key, None, timestamp)
         return cls(key, token_path, token_payload, timestamp, ciphertext)
 
@@ -135,8 +144,18 @@ def _encode(
     now: Optional[int] = None,
 ) -> str:
     f = Branca(key)
-    p = umsgpack.packb((path.encode("UTF-8"), payload))
-    ciphertext = f.encode(p, now)
+    try:
+        path_bytes = path.encode("UTF-8")
+    except Exception as e:
+        raise EncodingError("Could not UTF-8 encode the path") from e
+    try:
+        p = umsgpack.packb((path_bytes, payload))
+    except Exception as e:
+        raise EncodingError("Could not msg-pack the payload") from e
+    try:
+        ciphertext = f.encode(p, now)
+    except Exception as e:
+        raise EncodingError("Could not encode the branca token") from e
     return ciphertext
 
 
@@ -149,6 +168,16 @@ def _decode(
         f = key
     else:
         f = Branca(key)
-    tpb, token_payload = umsgpack.unpackb(f.decode(ciphertext, ttl))
-    token_path = tpb.decode("UTF-8")
+    try:
+        token = f.decode(ciphertext, ttl)
+    except Exception as e:
+        raise DecodingError("Could not decode the branca token") from e
+    try:
+        tpb, token_payload = umsgpack.unpackb(token)
+    except Exception as e:
+        raise DecodingError("Could not msg-unpack the payload") from e
+    try:
+        token_path = tpb.decode("UTF-8")
+    except Exception as e:
+        raise DecodingError("Could not UTF-8 decode the path") from e
     return Path(token_path), token_payload

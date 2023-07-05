@@ -9,9 +9,12 @@ from branca import Branca  # type: ignore
 from hypothesis import assume, given, strategies as st
 
 from . import mock
-from .token import TTL, Config, Key, State, Token, _decode, _encode, now
+from .token import TTL, Config, DecodingError, Key, State, Token, _decode, _encode, now
 from .type_alias import OptionalProp
 from .util import from_string
+
+_old_token = "1Ui3IS5xxIedbhSdPFPoGQRnTUtPVTmleMGJe1KyvWsVU704wk68k3YC70txTn5ZEJ4Ms3bh5Esy0OD4mZM0TnumUymWglgp3wq0CHo3W89DyW0"
+_old_key = "bNEZsIjvxDAiLhDA1chvF9zL9OJYPNlCqNPlm7KbhmU"
 
 _key = b"\xef\xc5\x07\xee}\x7f6\x11L\xb0\xc3155x\x11\xce.\x8e\xb96\xba\xce\x8b\x17-\xfc\x96]\xf8%\xd8"
 
@@ -23,6 +26,12 @@ msgpack = st.recursive(
     lambda children: st.lists(children) | st.dictionaries(st.text(printable), children),
     max_leaves=8,
 )
+
+
+def test_old_token():
+    key = Key(from_string(_old_key))
+    token = Token.from_ciphertext(key, _old_token)
+    assert token.check(0) == State.invalid
 
 
 def test_key_validator(config):
@@ -140,7 +149,7 @@ def token_roundtrip(tamper: bool, expire: bool, path: str, payload: OptionalProp
             data = data[0:3] + "f" + data[4:]
 
     if tamper or expire:
-        with pytest.raises(RuntimeError):
+        with pytest.raises(DecodingError):
             _decode(key, data, ttl)
     else:
         assert _decode(key, data, ttl) == (Path(path), payload)
