@@ -66,21 +66,25 @@ def lock_storage(request, postgres_dsn):
 
 
 @pytest.fixture()
-def pre_write_hook():
+def write_hooks():
     try:
         mock._pre_write_hook = "http://127.0.0.1/pre_write_hook"
+        mock._post_write_hook = "http://127.0.0.1/post_write_hook"
         yield
     finally:
         mock._pre_write_hook = None
+        mock._post_write_hook = None
 
 
 @pytest.fixture()
-def pre_write_callback():
+def write_callback():
     try:
         mock._pre_write_callback = mock.check_token
+        mock._post_write_callback = mock.check_token
         yield mock.check_token
     finally:
         mock._pre_write_callback = None
+        mock._post_write_callback = None
 
 
 @pytest.fixture()

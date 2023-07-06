@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from attr import dataclass
 from wsgidav.dav_error import HTTP_FORBIDDEN, DAVError
 from wsgidav.fs_dav_provider import FileResource, FilesystemProvider, FolderResource
 
 from .token import Token
-from .type_alias import PreWriteType
-from .util import requests_session
+from .type_alias import WriteType
+from .util import cattrib, requests_session
 
 
 class ManabiFolderResource(FolderResource):
@@ -51,6 +52,16 @@ class ManabiFolderResource(FolderResource):
         raise DAVError(HTTP_FORBIDDEN)
 
 
+@dataclass
+class CallbackHookConfig:
+    pre_write_hook: Optional[str] = cattrib(Optional[str], default=None)
+    pre_write_callback: Optional[WriteType] = cattrib(Optional[WriteType], default=None)
+    post_write_hook: Optional[str] = cattrib(Optional[str], default=None)
+    post_write_callback: Optional[WriteType] = cattrib(
+        Optional[WriteType], default=None
+    )
+
+
 class ManabiFileResource(FileResource):
     def __init__(
         self,
@@ -58,11 +69,9 @@ class ManabiFileResource(FileResource):
         environ,
         file_path,
         *,
-        pre_write_hook: Optional[str] = None,
-        pre_write_callback: Optional[PreWriteType] = None,
+        cb_hook_config: Optional[CallbackHookConfig] = None,
     ):
-        self._pre_write_hook = pre_write_hook
-        self._pre_write_callback = pre_write_callback
+        self._cb_config = cb_hook_config
         self._token = environ["manabi.token"]
         super().__init__(path, environ, file_path)
 
@@ -78,22 +87,46 @@ class ManabiFileResource(FileResource):
     def move_recursive(self, dest_path):
         raise DAVError(HTTP_FORBIDDEN)
 
-    def begin_write(self, *, content_type):
+    def get_token_and_config(self):
         token = self._token
-        if token:
-            pre_hook = self._pre_write_hook
-            pre_callback = self._pre_write_callback
+        config = self._cb_config
+        return token and config, token, config
 
-            if pre_hook:
-                session = requests_session()
-                res = session.post(pre_hook, data=token.encode())
-                if res.status_code != 200:
-                    raise DAVError(HTTP_FORBIDDEN)
-            if pre_callback:
-                if not pre_callback(token):
-                    raise DAVError(HTTP_FORBIDDEN)
-            # The hook returned and hopefully created a new version.
-            # Now we can save.
+    def process_post_write_hooks(self):
+        ok, token, config = self.get_token_and_config()
+        if not ok:
+            return
+        post_hook = config.post_write_hook
+        post_callback = config.post_write_callback
+
+        if post_hook:
+            session = requests_session()
+            session.post(post_hook, data=token.encode())
+        if post_callback:
+            post_callback(token)
+
+    def end_write(self, *, with_errors):
+        if not with_errors:
+            self.process_post_write_hooks()
+
+    def process_pre_write_hooks(self):
+        ok, token, config = self.get_token_and_config()
+        if not ok:
+            return
+        pre_hook = config.pre_write_hook
+        pre_callback = config.pre_write_callback
+
+        if pre_hook:
+            session = requests_session()
+            res = session.post(pre_hook, data=token.encode())
+            if res.status_code != 200:
+                raise DAVError(HTTP_FORBIDDEN)
+        if pre_callback:
+            if not pre_callback(token):
+                raise DAVError(HTTP_FORBIDDEN)
+
+    def begin_write(self, *, content_type):
+        self.process_pre_write_hooks()
         return super().begin_write(content_type=content_type)
 
 
@@ -104,11 +137,9 @@ class ManabiProvider(FilesystemProvider):
         *,
         readonly=False,
         shadow=None,
-        pre_write_hook: Optional[str] = None,
-        pre_write_callback: Optional[PreWriteType] = None,
+        cb_hook_config: Optional[CallbackHookConfig] = None,
     ):
-        self._pre_write_hook = pre_write_hook
-        self._pre_write_callback = pre_write_callback
+        self._cb_hook_config = cb_hook_config
         super().__init__(root_folder, readonly=readonly, shadow=shadow)
 
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
@@ -128,8 +159,7 @@ class ManabiProvider(FilesystemProvider):
                     path,
                     environ,
                     fp,
-                    pre_write_hook=self._pre_write_hook,
-                    pre_write_callback=self._pre_write_callback,
+                    cb_hook_config=self._cb_hook_config,
                 )
             else:
                 return None

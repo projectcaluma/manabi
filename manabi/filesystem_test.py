@@ -30,10 +30,12 @@ def test_get_and_put(tamper, expect_status, config: Dict[str, Any], server):
     ],
 )
 def test_get_and_put_hooked(
-    hook_status, expect_status, pre_write_hook, config: Dict[str, Any], server
+    hook_status, expect_status, write_hooks, config: Dict[str, Any], server
 ):
-    assert config["pre_write_hook"] == "http://127.0.0.1/pre_write_hook"
-    with mock.with_pre_write_hook(config, hook_status):
+    cb_hook_config = config["cb_hook_config"]
+    assert cb_hook_config.pre_write_hook == "http://127.0.0.1/pre_write_hook"
+    assert cb_hook_config.post_write_hook == "http://127.0.0.1/post_write_hook"
+    with mock.with_write_hooks(config, hook_status):
         req = mock.make_req(config)
         res = requests.get(req)
         assert res.status_code == 200
@@ -45,11 +47,12 @@ def test_get_and_put_hooked(
 def test_get_and_put_called(
     callback_return,
     expect_status,
-    pre_write_callback,
+    write_callback,
     config: Dict[str, Any],
     server,
 ):
-    assert config["pre_write_callback"] == pre_write_callback
+    assert config["cb_hook_config"].pre_write_callback == write_callback
+    assert config["cb_hook_config"].post_write_callback == write_callback
     req = mock.make_req(config)
     res = requests.get(req)
     assert res.status_code == 200
