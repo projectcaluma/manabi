@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+### Feature
+* Add post-write-hook/callback ([`80cbf38`](https://github.com/projectcaluma/manabi/commit/80cbf387a775e1a417e3a44bcfb884e926d5bf08))
+
+### Fix
+* **token:** Handle errors from msgpack by creating a invalid token ([`81a5ccf`](https://github.com/projectcaluma/manabi/commit/81a5ccff740112947c8fb67b97d17d6e640eedfb))
+
 ## v1.1.0 (2023-07-03)
 
 ### Feature
