@@ -1,10 +1,5 @@
 version: "3.8"
 services:
-  web:
-    restart: "unless-stopped"
-    build: .
-    ports:
-      - "80:8081"
   db:
     image: postgres:alpine
     restart: "unless-stopped"
