@@ -136,11 +136,11 @@ class ManabiProvider(FilesystemProvider):
         root_folder,
         *,
         readonly=False,
-        shadow=None,
+        fs_opts=None,
         cb_hook_config: Optional[CallbackHookConfig] = None,
     ):
         self._cb_hook_config = cb_hook_config
-        super().__init__(root_folder, readonly=readonly, shadow=shadow)
+        super().__init__(root_folder, readonly=readonly, fs_opts=fs_opts)
 
     def get_resource_inst(self, path: str, environ: Dict[str, Any]):
         token: Token = environ["manabi.token"]
