@@ -7,11 +7,15 @@ from unittest import mock as unitmock
 
 import pytest
 from hypothesis import settings
+from moto import mock_aws
 from psycopg2 import connect
 
 from . import mock
 from .log import verbose_logging
-from .mock import MockManabiDbLockStorage
+from .mock import MockManabiDbLockStorage, upload_file_to_s3
+from .util import get_boto_client
+
+TEST_FILES_DIR = Path(__file__).parent.resolve() / "data"
 
 
 def configure_hypothesis():
@@ -88,13 +92,13 @@ def write_callback():
 
 
 @pytest.fixture()
-def server_dir() -> Path:
+def server_dir(s3_file) -> Path:
     return mock.get_server_dir()
 
 
-@pytest.fixture()
-def config(server_dir, lock_storage) -> Dict[str, Any]:
-    return mock.get_config(server_dir, lock_storage)
+@pytest.fixture(params=[False])
+def config(server_dir, lock_storage, request) -> Dict[str, Any]:
+    return mock.get_config(server_dir, lock_storage, request.param)
 
 
 @pytest.fixture()
@@ -120,3 +124,16 @@ def cargo():
     if shutil.which("cargo"):
         with mock.branca_impl():
             run(["cargo", "run", "x", "y"])
+
+
+@pytest.fixture
+def s3():
+    with mock_aws():
+        s3 = get_boto_client()
+        s3.create_bucket(Bucket=os.environ.get("S3_BUCKET_NAME", "manabi-media"))
+        yield s3
+
+
+@pytest.fixture
+def s3_file(s3):
+    return upload_file_to_s3(s3)

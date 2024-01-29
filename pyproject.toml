@@ -38,6 +38,8 @@ attrs = "^23.1.0"
 django = "^3.2.15"
 psycopg2-binary = "^2.9.3"
 u-msgpack-python = "^2.8.0"
+boto3 = "^1.34.21"
+smart-open = {extras = ["s3"], version = "^6.4.0"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
@@ -62,6 +64,15 @@ python-lsp-black = "^1.3.0"
 python-lsp-isort = "^0.1"
 flake8-pyproject = "^1.2.3"
 requests-mock = "^1.11.0"
+urllib3 = "<2"  # downpinning needed for resolving dependencies when installing moto: https://github.com/orgs/python-poetry/discussions/7937
+pytest-env = "^1.1.3"
+moto = {extras = ["s3"], version = "^5.0.0"}
+syrupy = "^4.6.0"
+
+[tool.pytest.ini_options]
+env = [
+    "MOTO_S3_CUSTOM_ENDPOINTS=http://127.0.0.1:9000",
+]
 
 [tool.isort]
 multi_line_output = 3
