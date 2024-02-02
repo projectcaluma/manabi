@@ -156,8 +156,10 @@ def serve_document(
     key = Key.from_dictionary(config)
     path1 = Path("asdf.docx")
     url1 = Token(key, path1).as_url()
-    path2 = Path("nope.docx")
+    path2 = Path("asdf-s3.docx")
     url2 = Token(key, path2).as_url()
+    path3 = Path("nope.docx")
+    url3 = Token(key, path3).as_url()
     base = config["manabi"]["base_url"]
     script = """
 function copy_command(input) {
@@ -193,13 +195,25 @@ function copy_command(input) {
     <a href="https://git.libreoffice.org/core/+/58b84caca87c893ac04f0b1399aeadc839a2f075%5E%21">Bug fix.</a>
     <input type="text" value="libreoffice webdav://{base}/dav/{url1}" id="existing" size="115">
     <button onclick="copy_command('existing')">Copy command</button>
-    <h1>non-existing</h1>
+    <h1>S3</h1>
     <h2>word link</h2>
     <a href="ms-word:ofe|u|http://{base}/dav/{url2}">{path2}</a>
     <h2>webdav link</h2>
     <a href="webdav://{base}/dav/{url2}">{path2}</a>
     <h2>http link</h2>
     <a href="http://{base}/dav/{url2}">{path2}</a>
+    <h2>libreoffice command</h2>
+    LibreOffice does not support cookies so it is not a very good test and only LibreOffice 7+ works at all.
+    <a href="https://git.libreoffice.org/core/+/58b84caca87c893ac04f0b1399aeadc839a2f075%5E%21">Bug fix.</a>
+    <input type="text" value="libreoffice webdav://{base}/dav/{url2}" id="existing-s3" size="115">
+    <button onclick="copy_command('existing-s3')">Copy command</button>
+    <h1>non-existing</h1>
+    <h2>word link</h2>
+    <a href="ms-word:ofe|u|http://{base}/dav/{url3}">{path3}</a>
+    <h2>webdav link</h2>
+    <a href="webdav://{base}/dav/{url3}">{path3}</a>
+    <h2>http link</h2>
+    <a href="http://{base}/dav/{url3}">{path3}</a>
 </body>
 </html>
 """.strip().encode(
