@@ -1,6 +1,11 @@
 # Changelog
 
-<!--next-version-placeholder-->
+## v1.3.0
+
+### Feature
+* Add ManabiS3Provider ([`a90e373`](https://github.com/projectcaluma/manabi/commit/a90e3735253da1adce8dc8dcdbe3462bce6e5e84))
+
+## v1.2.0
 
 ### Feature
 * Add post-write-hook/callback ([`80cbf38`](https://github.com/projectcaluma/manabi/commit/80cbf387a775e1a417e3a44bcfb884e926d5bf08))
