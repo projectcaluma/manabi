@@ -1,4 +1,5 @@
 import calendar
+import os
 import threading
 from datetime import datetime
 from email.utils import formatdate
@@ -7,6 +8,7 @@ from inspect import getsource
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 import base62  # type: ignore
+import boto3
 import requests
 from attr import attrib, dataclass
 
@@ -94,3 +96,22 @@ def set_cookie(
         cookie[key]["httponly"] = True
     headers.append(cast(Tuple[str, str], tuple(str(cookie).split(": "))))
     info.start_response(status, headers, exc_info)
+
+
+def get_boto_client(
+    endpoint_url=None,
+    aws_access_key_id=None,
+    aws_secret_access_key=None,
+    region_name=None,
+):
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=endpoint_url
+        or os.environ.get("S3_ENDPOINT", "http://127.0.0.1:9000"),
+        aws_access_key_id=aws_access_key_id
+        or os.environ.get("S3_ACCESS_KEY_ID", "veryvery"),
+        aws_secret_access_key=aws_secret_access_key
+        or os.environ.get("S3_SECRET_ACCESS_KEY", "secretsecret"),
+        region_name=region_name or os.environ.get("S3_REGION", "us-east-1"),
+    )
+    return s3

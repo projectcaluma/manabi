@@ -4,21 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Lock',
+            name="Lock",
             fields=[
-                ('token', models.CharField(max_length=128, primary_key=True, serialize=False)),
-                ('data', models.JSONField()),
+                (
+                    "token",
+                    models.CharField(max_length=128, primary_key=True, serialize=False),
+                ),
+                ("data", models.JSONField()),
             ],
             options={
-                'db_table': 'manabi_lock',
+                "db_table": "manabi_lock",
             },
         ),
     ]

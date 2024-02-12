@@ -1,5 +1,6 @@
 from functools import partial
 from http.cookies import SimpleCookie
+from pathlib import Path
 from typing import Any, Callable, Dict, List
 from unittest.mock import MagicMock
 
@@ -49,21 +50,23 @@ class ManabiAuthenticator(BaseMiddleware):
         )
         return [content]
 
-    def update_env(self, info: AppInfo, token: Token, id_: str):
+    def update_env(self, info: AppInfo, token: Token, id_: str, dir_access: bool):
         environ = info.environ
         # Update the path for security, so we can't ever be tricked into serving a
         # path not authenticated by the token.
         path = token.path_as_url()
-        environ["PATH_INFO"] = path
+        environ["PATH_INFO"] = str(Path(path).parent) if dir_access else path
         environ["REQUEST_URI"] = path
         environ["manabi.path"] = path
 
         environ["wsgidav.auth.user_name"] = f"{path.strip('/')}|{id_[10:18]}"
         environ["manabi.token"] = token
 
-    def refresh(self, id_: str, info: AppInfo, token: Token, ttl: int):
+    def refresh(
+        self, id_: str, info: AppInfo, token: Token, ttl: int, dir_access: bool
+    ):
         new = Token.from_token(token)
-        self.update_env(info, token, id_)
+        self.update_env(info, token, id_, dir_access)
         return self.next_app(
             info.environ,
             partial(set_cookie, info, id_, new.encode(), ttl),
@@ -77,7 +80,7 @@ class ManabiAuthenticator(BaseMiddleware):
         The method checks if the token is valid, so wsgi-dav can serve the document.
         It also refreshes the token by setting a new token in a cookie.
 
-        Middlwares and wsgi-handlers are identical. Middlewares need to wrap
+        Middlewares and wsgi-handlers are identical. Middlewares need to wrap
         start_response with a closure, if they want to add headers.
         https://www.python.org/dev/peps/pep-3333/
         """
@@ -86,9 +89,8 @@ class ManabiAuthenticator(BaseMiddleware):
         path_info = environ["PATH_INFO"]
         id_, _, suffix = path_info.strip("/").partition("/")
         suffix = suffix.strip("/")
-        # We need this because we replace PATH_INFO with token.path, so later
-        # we don't know if this was a directory access
-        environ["manabi.dir_access"] = suffix == ""
+        # We need this in order to correctly set environ["PATH_INFO"]
+        dir_access = suffix == ""
         if not id_:
             return self.access_denied(start_response, "no token supplied")
         initial = Token.from_ciphertext(config.key, id_)
@@ -105,9 +107,9 @@ class ManabiAuthenticator(BaseMiddleware):
             if refresh and refresh.value:
                 refresh = Token.from_ciphertext(config.key, refresh.value)
                 if refresh.refresh(config.ttl) == State.valid:
-                    return self.refresh(id_, info, refresh, ttl)
+                    return self.refresh(id_, info, refresh, ttl, dir_access)
 
         check = initial.initial(config.ttl)
         if initial.initial(config.ttl) == State.valid:
-            return self.refresh(id_, info, initial, ttl)
+            return self.refresh(id_, info, initial, ttl, dir_access)
         return self.access_denied(start_response, check.value[1])

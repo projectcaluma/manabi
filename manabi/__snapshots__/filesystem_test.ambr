@@ -1,0 +1,73 @@
+# serializer version: 1
+# name: test_collection_propfind[False--False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False--True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/foo/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/foo/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/foo/bar/baz/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-/foo/bar/baz/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-foo/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-foo/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-foobarbaz-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[False-foobarbaz-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True--False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True--True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype><ns0:collection /></ns0:resourcetype></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/foo/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/foo/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/foo/bar/baz/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-/foo/bar/baz/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-foo/-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-foo/-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-foobarbaz-False-False-asdf.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---
+# name: test_collection_propfind[True-foobarbaz-True-True-asdf-s3.docx]
+  b'<?xml version="1.0" encoding="utf-8" ?>\n<ns0:multistatus xmlns:ns0="DAV:"><ns0:response><ns0:href>/dav/asdf-s3.docx</ns0:href><ns0:propstat><ns0:prop><ns0:resourcetype /></ns0:prop><ns0:status>HTTP/1.1 200 OK</ns0:status></ns0:propstat></ns0:response></ns0:multistatus>'
+# ---

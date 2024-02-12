@@ -18,7 +18,7 @@ from wsgidav.request_resolver import RequestResolver
 
 from . import ManabiDAVApp, lock as mlock
 from .auth import ManabiAuthenticator
-from .filesystem import CallbackHookConfig, ManabiProvider
+from .filesystem import CallbackHookConfig, ManabiProvider, ManabiS3Provider
 from .lock import ManabiDbLockStorage as ManabiDbLockStorageOrig
 from .log import HeaderLogger, ResponseLogger
 from .token import Config, Key, Token, now
@@ -33,11 +33,13 @@ _test_file1 = Path(_module_dir, "data", "asdf.docx")
 _test_file2 = Path(_module_dir, "data", "qwert.docx")
 _postgres_dsn = "dbname=manabi user=manabi host=localhost password=manabi"
 
+TEST_FILES_DIR = Path(__file__).parent.resolve() / "data"
+
 
 @contextmanager
-def with_config() -> Generator[dict, None, None]:
+def with_config(use_s3=False) -> Generator[dict, None, None]:
     with lock_storage() as storage:
-        yield get_config(get_server_dir(), storage)
+        yield get_config(get_server_dir(), storage, use_s3=use_s3)
 
 
 def get_server_dir():
@@ -88,7 +90,7 @@ _pre_write_callback: Optional[WriteType] = None
 _post_write_callback: Optional[WriteType] = None
 
 
-def get_config(server_dir: Path, lock_storage: Union[Path, str]):
+def get_config(server_dir: Path, lock_storage: Union[Path, str], use_s3: bool = False):
     refresh = 600
     base_url = os.environ.get("MANABI_BASE_URL") or "localhost:8081"
     lock_obj: Union[mlock.ManabiShelfLockLockStorage, mlock.ManabiDbLockStorage]
@@ -102,6 +104,20 @@ def get_config(server_dir: Path, lock_storage: Union[Path, str]):
         post_write_hook=_post_write_hook,
         post_write_callback=_post_write_callback,
     )
+    provider_class: Union[type[ManabiProvider], type[ManabiS3Provider]] = ManabiProvider
+    provider_kwargs: dict[str, str] = {}
+    if use_s3:
+        provider_class = ManabiS3Provider
+        provider_kwargs = {
+            "endpoint_url": os.environ.get("S3_ENDPOINT", "http://127.0.0.1:9000"),
+            "aws_access_key_id": os.environ.get("S3_ACCESS_KEY_ID", "veryvery"),
+            "aws_secret_access_key": os.environ.get(
+                "S3_SECRET_ACCESS_KEY", "secretsecret"
+            ),
+            "region_name": os.environ.get("S3_REGION", "us-east-1"),
+            "bucket_name": os.environ.get("S3_BUCKET_NAME", "manabi-media"),
+        }
+
     return {
         "cb_hook_config": cb_hook_config,
         "host": "0.0.0.0",
@@ -109,7 +125,9 @@ def get_config(server_dir: Path, lock_storage: Union[Path, str]):
         "mount_path": "/dav",
         "lock_storage": lock_obj,
         "provider_mapping": {
-            "/": ManabiProvider(server_dir, cb_hook_config=cb_hook_config),
+            "/": provider_class(
+                server_dir, cb_hook_config=cb_hook_config, **provider_kwargs
+            ),
         },
         "middleware_stack": [
             HeaderLogger,
@@ -138,8 +156,10 @@ def serve_document(
     key = Key.from_dictionary(config)
     path1 = Path("asdf.docx")
     url1 = Token(key, path1).as_url()
-    path2 = Path("nope.docx")
+    path2 = Path("asdf-s3.docx")
     url2 = Token(key, path2).as_url()
+    path3 = Path("nope.docx")
+    url3 = Token(key, path3).as_url()
     base = config["manabi"]["base_url"]
     script = """
 function copy_command(input) {
@@ -175,13 +195,25 @@ function copy_command(input) {
     <a href="https://git.libreoffice.org/core/+/58b84caca87c893ac04f0b1399aeadc839a2f075%5E%21">Bug fix.</a>
     <input type="text" value="libreoffice webdav://{base}/dav/{url1}" id="existing" size="115">
     <button onclick="copy_command('existing')">Copy command</button>
-    <h1>non-existing</h1>
+    <h1>S3</h1>
     <h2>word link</h2>
     <a href="ms-word:ofe|u|http://{base}/dav/{url2}">{path2}</a>
     <h2>webdav link</h2>
     <a href="webdav://{base}/dav/{url2}">{path2}</a>
     <h2>http link</h2>
     <a href="http://{base}/dav/{url2}">{path2}</a>
+    <h2>libreoffice command</h2>
+    LibreOffice does not support cookies so it is not a very good test and only LibreOffice 7+ works at all.
+    <a href="https://git.libreoffice.org/core/+/58b84caca87c893ac04f0b1399aeadc839a2f075%5E%21">Bug fix.</a>
+    <input type="text" value="libreoffice webdav://{base}/dav/{url2}" id="existing-s3" size="115">
+    <button onclick="copy_command('existing-s3')">Copy command</button>
+    <h1>non-existing</h1>
+    <h2>word link</h2>
+    <a href="ms-word:ofe|u|http://{base}/dav/{url3}">{path3}</a>
+    <h2>webdav link</h2>
+    <a href="webdav://{base}/dav/{url3}">{path3}</a>
+    <h2>http link</h2>
+    <a href="http://{base}/dav/{url3}">{path3}</a>
 </body>
 </html>
 """.strip().encode(
@@ -275,6 +307,15 @@ def make_req(
     t = make_token(config, override_path)
     port = config["port"]
     return f"http://localhost:{port}/dav/{t.as_url()}"
+
+
+def upload_file_to_s3(s3):
+    with _test_file1.open("rb") as f:
+        s3.put_object(
+            Bucket=os.environ.get("S3_BUCKET_NAME", "manabi-media"),
+            Key=str(_server_dir / "asdf-s3.docx"),
+            Body=f.read(),
+        )
 
 
 class MockManabiDbLockStorage(ManabiDbLockStorageOrig):
