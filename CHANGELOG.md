@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.1
+
+### Fix
+* fix: fix path handling difference between MinIO and S3 ([`dab81ec`](https://github.com/projectcaluma/manabi/commit/dab81ec35d2a6a7fe8f237976b253fdf15ab5963))
+
 ## v1.3.0
 
 ### Feature
