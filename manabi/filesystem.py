@@ -176,16 +176,25 @@ class ManabiS3FileResource(DAVNonCollection, ManabiFileResourceMixin):
         *,
         cb_hook_config: Optional[CallbackHookConfig] = None,
     ):
+        self.provider: ManabiS3Provider
         super().__init__(path, environ)
         self.s3 = s3
         self.bucket_name = bucket_name
         self._cb_config = cb_hook_config
         self._token = environ["manabi.token"]
         self.path = path
+
+        # if the files reside in the buckets top-level directory, there is a difference
+        # between MinIO and S3. MinIO doesn't use a database as opposed to S3. That's
+        # the reason, why leading slashes are not preserved. For S3 on the other hand,
+        # we need to manually strip them.
+        # -> https://github.com/minio/minio/issues/17356#issuecomment-1578787168
+        if self.provider.root_folder_path == "/":
+            file_path = file_path.lstrip("/")
+
         self.file_path = file_path
         self.file_obj = self.s3.get_object(Bucket=self.bucket_name, Key=self.file_path)
         self.name = Path(self.path).name
-        self.provider: ManabiS3Provider
 
     def support_etag(self):
         return True
