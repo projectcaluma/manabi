@@ -104,7 +104,7 @@ class ManabiFileResourceMixin:
                 raise DAVError(HTTP_FORBIDDEN)
 
 
-class ManabiFileResource(FileResource, ManabiFileResourceMixin):
+class ManabiFileResource(ManabiFileResourceMixin, FileResource):
     def __init__(
         self,
         path,
@@ -165,7 +165,7 @@ class ManabiProvider(FilesystemProvider):
             return self.get_file_resource(path, environ, fp)
 
 
-class ManabiS3FileResource(DAVNonCollection, ManabiFileResourceMixin):
+class ManabiS3FileResource(ManabiFileResourceMixin, DAVNonCollection):
     def __init__(
         self,
         s3,
