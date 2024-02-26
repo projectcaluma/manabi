@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.2
+### Fix
+
+* Fix inheritance order with `ManabiFileResourceMixin` ([`c751b69`](https://github.com/projectcaluma/manabi/commit/c751b6946aff4a75d180e6c7e9f0da4bdd9b45c3))
+
 ## v1.3.1
 
 ### Fix
