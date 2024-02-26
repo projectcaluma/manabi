@@ -65,6 +65,18 @@ class ManabiFileResourceMixin:
     _token: Token
     _cb_config: Optional[CallbackHookConfig]
 
+    def delete(self):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def copy_move_single(self, dest_path, is_move):
+        raise DAVError(HTTP_FORBIDDEN)
+
+    def support_recursive_move(self, dest_path):
+        return False
+
+    def move_recursive(self, dest_path):
+        raise DAVError(HTTP_FORBIDDEN)
+
     def _get_token_and_config(self):
         token = self._token
         config = self._cb_config
@@ -116,18 +128,6 @@ class ManabiFileResource(ManabiFileResourceMixin, FileResource):
         self._cb_config = cb_hook_config
         self._token = environ["manabi.token"]
         super().__init__(path, environ, file_path)
-
-    def delete(self):
-        raise DAVError(HTTP_FORBIDDEN)
-
-    def copy_move_single(self, dest_path, is_move):
-        raise DAVError(HTTP_FORBIDDEN)
-
-    def support_recursive_move(self, dest_path):
-        return False
-
-    def move_recursive(self, dest_path):
-        raise DAVError(HTTP_FORBIDDEN)
 
     def begin_write(self, *, content_type=None):
         self.process_pre_write_hooks()
