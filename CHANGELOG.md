@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.3
+### Fix
+
+* Move methods from `ManabiFileResource` to `ManabiFileResourceMixin` ([`acc3193`](https://github.com/projectcaluma/manabi/commit/acc31932047bd75bc75ef9681fe84308fb98ad7c))
+
 ## v1.3.2
 ### Fix
 
