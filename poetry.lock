@@ -2013,13 +2013,13 @@ urllib3 = ">=1.26.0"
 
 [[package]]
 name = "types-psycopg2"
-version = "2.9.21.20240118"
+version = "2.9.21.20240218"
 description = "Typing stubs for psycopg2"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-psycopg2-2.9.21.20240118.tar.gz", hash = "sha256:e4a06316e7c9690255175c3ee5dffa5b47c5057f17181f5e34c6dcdb34066f35"},
-    {file = "types_psycopg2-2.9.21.20240118-py3-none-any.whl", hash = "sha256:08c024f7da3a78c2c0404305f96c2b6067185d690cc4e9d14fc6ea595879ff8a"},
+    {file = "types-psycopg2-2.9.21.20240218.tar.gz", hash = "sha256:3084cd807038a62c80fb5be78b41d855b48a060316101ea59fd85c302efb57d4"},
+    {file = "types_psycopg2-2.9.21.20240218-py3-none-any.whl", hash = "sha256:cac96264e063cbce28dee337a973d39e6df4ca671252343cb4f8e5ef6db5e67d"},
 ]
 
 [[package]]
