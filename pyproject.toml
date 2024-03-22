@@ -39,7 +39,7 @@ django = "^3.2.15"
 psycopg2-binary = "^2.9.3"
 u-msgpack-python = "^2.8.0"
 boto3 = "^1.34.21"
-smart-open = {extras = ["s3"], version = "^6.4.0"}
+smart-open = {extras = ["s3"], version = ">=6.4,<8.0"}
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
