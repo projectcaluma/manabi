@@ -2217,13 +2217,13 @@ files = [
 
 [[package]]
 name = "wsgidav"
-version = "4.3.1"
+version = "4.3.2"
 description = "Generic and extendable WebDAV server based on WSGI"
 optional = false
 python-versions = "*"
 files = [
-    {file = "WsgiDAV-4.3.1-py3-none-any.whl", hash = "sha256:00223c2ecd867622a7d9aa15eab6d9f8cb6f39535c4d8f30a045d727c6e03b84"},
-    {file = "WsgiDAV-4.3.1.tar.gz", hash = "sha256:53b69c8efb94fd06b90db806833555dede2f6a9ce2458d5a29eee03154773840"},
+    {file = "WsgiDAV-4.3.2-py3-none-any.whl", hash = "sha256:9645fdb799332840c3646dddbf0750624166da719285113e5d17c1f2d1ccd40a"},
+    {file = "WsgiDAV-4.3.2.tar.gz", hash = "sha256:4c3c24ac01b656a9edcb0014f31717ca8b9a3ec7d7cd9adc39d9ce1b00bfe759"},
 ]
 
 [package.dependencies]
