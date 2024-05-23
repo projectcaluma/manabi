@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.0
+### Chore
+
+* update to django 4.x ([`3e9084b`](https://github.com/projectcaluma/manabi/commit/3e9084b0774bfa06c6229311ae927f86d426a6ed))
+
 ## v1.3.3
 ### Fix
 
