@@ -300,9 +300,7 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         try:
             self._cursor.execute(*args, **kwargs)
         except (InterfaceError, OperationalError):
-            _logger.error(
-                f"Postgres connection lost, reconnecting. {''.join(traceback.format_stack())}"
-            )
+            _logger.warn("Postgres connection lost, reconnecting")
 
             self.connect()
             self._cursor.execute(*args, **kwargs)
