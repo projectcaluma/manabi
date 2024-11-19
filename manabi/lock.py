@@ -258,10 +258,11 @@ class ManabiPostgresDict(MutableMapping):
             cursor = self._storage_object().execute(
                 "SELECT data FROM manabi_lock WHERE token = %s", (str(token),)
             )
-            lock = cursor.fetchone()
-            if lock is None:
+            locks = cursor.fetchmany(1)
+            if not len(locks):
                 raise KeyError(f"{token} not found")
-            lock = lock[0]
+
+            lock = locks[0][0]  # first row, first col
             self.encode_lock(lock)
             return lock
 
