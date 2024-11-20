@@ -47,6 +47,9 @@ class ManabiContextLockMixin(ABC):
     def acquire(self):
         pass
 
+    def __init__(self):
+        self._id = -1
+
     @abstractmethod
     def release(self):
         pass
@@ -56,6 +59,13 @@ class ManabiContextLockMixin(ABC):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.release()
+
+    def _check_and_set_tid(self):
+        tid: int = threading.get_ident()
+        tid_is_set = self._id != -1
+        if tid_is_set and self._id != tid:
+            _logger.error("Do not use from multiple threads")
+        self._id = tid
 
 
 class ManabiShelfLock(ManabiContextLockMixin):
@@ -69,27 +79,22 @@ class ManabiShelfLock(ManabiContextLockMixin):
         self._lock_file = open(f"{storage_path}.lock", "wb+")
         self._fd = self._lock_file.fileno()
         self.acquire_write = self.acquire_read = self.acquire
-        self._id = -1
+        super().__init__()
 
     def acquire(self):
-        tid = threading.get_ident()
-        if self._id and self._id != tid:
-            _logger.error("Do not use from multiple threads")
-        self._id = tid
+        self._check_and_set_tid()
         if self._semaphore == 0:
             fcntl.flock(self._fd, fcntl.LOCK_EX)
             self._storage_object()._dict = shelve.open(str(self._storage_path))
         self._semaphore += 1
 
     def release(self):
-        tid = threading.get_ident()
         if self._semaphore == 0:
             _logger.error(
                 f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
             )
-        if self._id and self._id != tid:
-            _logger.error("Do not use from multiple threads")
-        self._id = tid
+
+        self._check_and_set_tid()
         self._semaphore -= 1
         if self._semaphore == 0:
             storage_object = self._storage_object()
@@ -97,7 +102,6 @@ class ManabiShelfLock(ManabiContextLockMixin):
                 storage_object._dict.close()
                 storage_object._dict = None
             fcntl.flock(self._fd, fcntl.LOCK_UN)
-        self._id = threading.get_ident()
 
 
 class ManabiShelfLockLockStorage(LockStorageDict, ManabiTimeoutMixin):
@@ -150,18 +154,15 @@ class ManabiPostgresLock(ManabiContextLockMixin):
     _storage_object: Callable[[], "ManabiDbLockStorage"]
 
     def __init__(self, storage_object: "ManabiDbLockStorage"):
-        self._id = None
         # type manually checked
         self._storage_object = weakref.ref(storage_object)  # type: ignore
         self.acquire_write = self.acquire_read = self.acquire
         self._semaphore = 0
-        self._id = -1
+        super().__init__()
 
     def acquire(self):
         tid = threading.get_ident()
-        if self._id and self._id != tid:
-            _logger.error("Do not use from multiple threads")
-        self._id = tid
+        self._check_and_set_tid()
         if self._semaphore == 0:
             _logger.info(f"{tid} acquire")
             self._storage_object().execute(
@@ -175,9 +176,7 @@ class ManabiPostgresLock(ManabiContextLockMixin):
             _logger.error(
                 f"Inconsistent use of lock. {''.join(traceback.format_stack())}"
             )
-        if self._id and self._id != tid:
-            _logger.error("Do not use from multiple threads")
-        self._id = tid
+        self._check_and_set_tid()
         self._semaphore -= 1
         if self._semaphore == 0:
             _logger.info(f"{tid} release")
@@ -258,10 +257,11 @@ class ManabiPostgresDict(MutableMapping):
             cursor = self._storage_object().execute(
                 "SELECT data FROM manabi_lock WHERE token = %s", (str(token),)
             )
-            lock = cursor.fetchone()
-            if lock is None:
+            locks = cursor.fetchmany(1)
+            if not len(locks):
                 raise KeyError(f"{token} not found")
-            lock = lock[0]
+
+            lock = locks[0][0]  # first row, first col
             self.encode_lock(lock)
             return lock
 
