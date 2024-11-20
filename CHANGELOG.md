@@ -1,6 +1,14 @@
 # Changelog
 
+## 1.4.1
+
+### Fix
+
+* fix: do not crash if expected lock entry is not in db ([`2920c64`](https://github.com/projectcaluma/manabi/commit/2920c64e31eba99f2f30f913b235595478c56e7e))
+* fix: do not log stacktrace on db reconnect ([`8f0d753`](https://github.com/projectcaluma/manabi/commit/8f0d75365fd8afb16924f616d5c02d14d75e9839))
+
 ## v1.4.0
+
 ### Chore
 
 * update to django 4.x ([`3e9084b`](https://github.com/projectcaluma/manabi/commit/3e9084b0774bfa06c6229311ae927f86d426a6ed))
