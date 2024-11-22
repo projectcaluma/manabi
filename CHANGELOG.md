@@ -1,6 +1,12 @@
 # Changelog
 
-## 1.4.1
+## v1.5.0
+
+### Feature
+
+* Widen token column a bit ([`fcb0a2f`](https://github.com/projectcaluma/manabi/commit/fcb0a2f0b458f5918d76654b4c2d5aaf135329a5))
+
+## v1.4.1
 
 ### Fix
 
