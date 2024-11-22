@@ -227,7 +227,7 @@ class ManabiS3FileResource(ManabiFileResourceMixin, DAVNonCollection):
             transport_params={"client": self.s3},
         )
 
-    def begin_write(self, *, content_type):
+    def begin_write(self, *, content_type=None):
         """
         Open content as a stream for writing.
 
@@ -257,7 +257,7 @@ class ManabiS3Provider(ManabiProvider):
         shadow=None,
         cb_hook_config: Optional[CallbackHookConfig] = None,
     ):
-        super(FilesystemProvider, self).__init__()
+        super(FilesystemProvider, self).__init__()  # type: ignore
 
         if not root_folder:
             raise ValueError("Invalid root path: {dir}".format(dir=root_folder))
@@ -269,7 +269,7 @@ class ManabiS3Provider(ManabiProvider):
         else:
             self.shadow = {}
 
-        self.fs_opts = {}
+        self.fs_opts: Dict[str, Any] = {}
         # Get shadow map and convert keys to lower case
         self.shadow_map = self.fs_opts.get("shadow_map") or {}
         if self.shadow_map:
