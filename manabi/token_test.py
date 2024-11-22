@@ -198,7 +198,7 @@ def cargo_build():
 
 @pytest.mark.skipif(cargo_build(), reason="needs rustc and cargo")
 def test_other_impl_decode(cargo):
-    other_impl_decode("hello world".encode("UTF-8"))
+    other_impl_decode(b"hello world")
 
 
 # TODO test binary data when branca-rust supports binary data:

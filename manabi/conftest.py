@@ -1,8 +1,9 @@
 import os
 import shutil
+from collections.abc import Generator
 from pathlib import Path
 from subprocess import run
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 from unittest import mock as unitmock
 
 import pytest
@@ -30,7 +31,7 @@ def configure_hypothesis():
 configure_hypothesis()
 
 
-@pytest.fixture()
+@pytest.fixture
 def chaos():
     with unitmock.patch("manabi.lock.ManabiDbLockStorage", MockManabiDbLockStorage):
         yield
@@ -55,7 +56,7 @@ def clean_db() -> Generator[None, None, None]:
     clean_db_exec()
 
 
-@pytest.fixture()
+@pytest.fixture
 def postgres_dsn():
     return mock._postgres_dsn
 
@@ -69,7 +70,7 @@ def lock_storage(request, postgres_dsn):
             yield storage
 
 
-@pytest.fixture()
+@pytest.fixture
 def write_hooks():
     try:
         mock._pre_write_hook = "http://127.0.0.1/pre_write_hook"
@@ -80,7 +81,7 @@ def write_hooks():
         mock._post_write_hook = None
 
 
-@pytest.fixture()
+@pytest.fixture
 def write_callback():
     try:
         mock._pre_write_callback = mock.check_token
@@ -91,7 +92,7 @@ def write_callback():
         mock._post_write_callback = None
 
 
-@pytest.fixture()
+@pytest.fixture
 def server_dir(s3_file) -> Path:
     return mock.get_server_dir()
 
@@ -101,19 +102,19 @@ def config(server_dir, lock_storage, request) -> Dict[str, Any]:
     return mock.get_config(server_dir, lock_storage, request.param)
 
 
-@pytest.fixture()
+@pytest.fixture
 def server(config: Dict[str, Any]) -> Generator:
     with mock.run_server(config):
         yield
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_now_invalid_past() -> Generator[unitmock.MagicMock, None, None]:
     with mock.shift_now(-1200) as m:
         yield m
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_now_invalid_future() -> Generator[unitmock.MagicMock, None, None]:
     with mock.shift_now(1200) as m:
         yield m
@@ -123,7 +124,7 @@ def mock_now_invalid_future() -> Generator[unitmock.MagicMock, None, None]:
 def cargo():
     if shutil.which("cargo"):
         with mock.branca_impl():
-            run(["cargo", "run", "x", "y"])
+            run(["cargo", "run", "x", "y"], check=False)
 
 
 @pytest.fixture

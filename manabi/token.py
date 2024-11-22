@@ -99,8 +99,7 @@ class Token:
     def from_token(cls, token: "Token", timestamp: Optional[int] = None) -> "Token":
         if timestamp is None:
             return cls(token.key, token.path, token.payload, now())
-        else:
-            return cls(token.key, token.path, token.payload, timestamp)
+        return cls(token.key, token.path, token.payload, timestamp)
 
     @classmethod
     def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":

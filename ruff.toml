@@ -1,0 +1,88 @@
+line-length = 88
+exclude = [
+    "migrations",
+    "snapshots"
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 88
+
+[lint]
+select = [
+	"F",       # pyflakes
+	"E",       # pycodestyle errors
+	"I",       # isort
+	"C90",     # mccabe
+	"D",       # pydocstyle
+	"ASYNC",   # flake8-async
+	"B",       # flake8-bugbear
+	"COM",     # flake8-commas
+	"T10",     # flake8-debugger
+	"EXE",     # flake8-executable
+	"ISC",     # flake8-implicit-str-concat
+	"ICN",     # flake8-import-conventions
+	"INP",     # flake8-no-pep420
+	"PIE",     # flake8-pie
+	"PYI",     # flake8-pyi
+	"Q",       # flake8-quotes
+	"RSE",     # flake8-raise
+	"SLOT",    # flake8-slots
+	"TID",     # flake8-tidy-imports
+	"TCH",     # flake8-type-checking
+	"INT",     # flake8-gettext
+	"ERA",     # eradicate
+	"W605",    # invalid escape sequence
+]
+ignore = [
+	"D203",    # we prefer blank-line-before-class (D211) for black compat
+	"D213",    # we prefer multi-line-summary-first-line (D212)
+	"COM812",  # ignore due to conflict with formatter
+	"ISC001",  # ignore due to conflict with formatter
+	"E501",    # managed by formatter
+	"TD002",   # don't require author of TODO
+	"TD003",   # don't require link to TODO
+	"D100",    # don't enforce existance of docstrings
+	"D101",    # don't enforce existance of docstrings
+	"D102",    # don't enforce existance of docstrings
+	"D103",    # don't enforce existance of docstrings
+	"D104",    # don't enforce existance of docstrings
+	"D105",    # don't enforce existance of docstrings
+	"D106",    # don't enforce existance of docstrings
+	"D107",    # don't enforce existance of docstrings
+]
+
+[lint.per-file-ignores]
+"**/{mock.py,conftest.py,*test*.py}" = [
+	"D",       # pydocstyle is optional for tests
+	"ANN",     # flake8-annotations are optional for tests
+	"S101",    # assert is allow in tests
+	"S105",    # tests may have hardcoded secrets
+	"S106",    # tests may have hardcoded passwords
+	"S311",    # tests may use pseudo-random generators
+	"S108",    # /tmp is allowed in tests since it's expected to be mocked
+	"DTZ00",   # tests often run in UTC
+	"INP001",  # tests do not need a dunder init
+	"PLR0913", # tests can have a lot of arguments (fixtures)
+	"PLR2004", # tests can use magic values
+]
+"**/*/factories.py" = [
+	"S311",    # factories may use pseudo-random generators
+]
+
+[lint.isort]
+known-first-party = ["timed"]
+known-third-party = ["pytest_factoryboy"]
+combine-as-imports = true
+
+[lint.flake8-annotations]
+# TODO: drop this, its temporary
+ignore-fully-untyped = true
+
+[lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[lint.flake8-pytest-style]
+fixture-parentheses = false
