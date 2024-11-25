@@ -104,7 +104,7 @@ def get_boto_client(
     aws_secret_access_key=None,
     region_name=None,
 ):
-    s3 = boto3.client(
+    return boto3.client(
         "s3",
         endpoint_url=endpoint_url
         or os.environ.get("S3_ENDPOINT", "http://127.0.0.1:9000"),
@@ -114,4 +114,3 @@ def get_boto_client(
         or os.environ.get("S3_SECRET_ACCESS_KEY", "secretsecret"),
         region_name=region_name or os.environ.get("S3_REGION", "us-east-1"),
     )
-    return s3

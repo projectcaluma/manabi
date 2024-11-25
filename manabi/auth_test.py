@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, cast
+from typing import cast
 from urllib.parse import quote
 
 import pytest

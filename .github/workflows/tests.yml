@@ -40,17 +40,13 @@ jobs:
       - name: Workaround mpyp not type-checking wsgidav
         run: poetry run python -m manabi.mypy_fix
 
-      - name: Run flake8
-        run: poetry run flake8 manabi
-
-      - name: Run mypy
+      - name: MyPy type checking
         run: poetry run mypy manabi
 
-      - name: Run isort
-        run: poetry run isort --check-only manabi
-
-      - name: Run black
-        run: poetry run black --check manabi
+      - name: Ruff format checking
+        run: poetry run ruff format manabi/ --check
+      - name: Ruff style checking
+        run: poetry run ruff check  manabi/ --output-format=github
 
   compatibility-tests:
     name: Compatibility tests

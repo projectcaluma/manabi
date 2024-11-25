@@ -187,19 +187,16 @@ def run_lock_test(req):
             res, xml = http("UNLOCK", req, token=token)
             if res.status in (200, 204):
                 return (Results.LOCKED_AND_UNLOCKED, f"status: {res.status}")
-            else:
-                return (Results.LOCKED_UNLOCK_FAILED, f"status: {res.status}")
+            return (Results.LOCKED_UNLOCK_FAILED, f"status: {res.status}")
         return (Results.FIRST_LOCK_FAILED, f"status: {res.status}")
     except HTTPError as e:
         if e.status == 500:
             return (Results.SERVER_ERROR, e)
         if locked:
             return (Results.LOCKED_UNLOCK_FAILED, e)
-        else:
-            if e.status == 423:
-                return (Results.FIRST_LOCK_FAILED, e)
-            else:
-                return (Results.UNKNOWN_ERROR, e)
+        if e.status == 423:
+            return (Results.FIRST_LOCK_FAILED, e)
+        return (Results.UNKNOWN_ERROR, e)
     except Exception as e:
         return (False, e)
 

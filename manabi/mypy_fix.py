@@ -15,7 +15,6 @@ def fix():
                 (Path(file).absolute().parent / "py.typed").touch()
         except Exception as e:
             print(e)
-            pass
 
 
 if __name__ == "__main__":

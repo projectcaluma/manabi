@@ -1,12 +1,13 @@
 import os
 import random
 import shutil
+from collections.abc import Generator
 from contextlib import contextmanager
 from functools import partial
 from glob import glob
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, Dict, Generator, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 from unittest import mock as unitmock
 
 import requests_mock
@@ -104,7 +105,7 @@ def get_config(server_dir: Path, lock_storage: Union[Path, str], use_s3: bool = 
         post_write_hook=_post_write_hook,
         post_write_callback=_post_write_callback,
     )
-    provider_class: Union[type[ManabiProvider], type[ManabiS3Provider]] = ManabiProvider
+    provider_class: type[Union[ManabiProvider, ManabiS3Provider]] = ManabiProvider
     provider_kwargs: dict[str, str] = {}
     if use_s3:
         provider_class = ManabiS3Provider
@@ -216,9 +217,7 @@ function copy_command(input) {
     <a href="http://{base}/dav/{url3}">{path3}</a>
 </body>
 </html>
-""".strip().encode(
-        "UTF-8"
-    )
+""".strip().encode("UTF-8")
 
     start_response(
         "200 Ok",
