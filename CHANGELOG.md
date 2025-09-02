@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.1
+
+### Fix
+
+* **deps:** Update to psycopg v3 ([`64183fe`](https://github.com/projectcaluma/manabi/commit/64183fe880f79778e7e240ca28080de4f5767d46))
+
 ## v2.0.0
 
 ### Feature
