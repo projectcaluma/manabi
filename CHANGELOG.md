@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.0.0
+
+### Feature
+
+* **deps:** Update dependencies ([`edd2fb0`](https://github.com/projectcaluma/manabi/commit/edd2fb02eafbbdc0401cd7fc3f226f2e2aa10927))
+
+### Breaking
+
+* This removes support for Python < 3.12 ([`edd2fb0`](https://github.com/projectcaluma/manabi/commit/edd2fb02eafbbdc0401cd7fc3f226f2e2aa10927))
+
 ## v1.5.0
 
 ### Feature
