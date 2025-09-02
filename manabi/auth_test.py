@@ -1,5 +1,6 @@
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, cast
+from typing import cast
 from urllib.parse import quote
 
 import pytest
@@ -105,20 +106,24 @@ def force_with_token(url, past, do_quote=False, sep="/"):
     check_res(path, res)
 
 
-@given(lists(text()).flatmap(lambda x: permutations(x + [cast(str, None)])), booleans())
+@given(
+    lists(text()).flatmap(lambda x: permutations(x + [cast("str", None)])), booleans()
+)
 def test_force_with_token(mod_server, url, past):
     force_with_token(url, past)
 
 
 @given(
-    lists(binary()).flatmap(lambda x: permutations(x + [cast(bytes, None)])), booleans()
+    lists(binary()).flatmap(lambda x: permutations(x + [cast("bytes", None)])),
+    booleans(),
 )
 def test_force_quote_with_token(mod_server, url, past):
     force_with_token(url, past, do_quote=True)
 
 
 @given(
-    lists(binary()).flatmap(lambda x: permutations(x + [cast(bytes, None)])), booleans()
+    lists(binary()).flatmap(lambda x: permutations(x + [cast("bytes", None)])),
+    booleans(),
 )
 def test_force_binary_with_token(mod_server, url, past):
     force_with_token(url, past, do_quote=False, sep=b"/")

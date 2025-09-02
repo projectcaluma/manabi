@@ -159,10 +159,10 @@ class ManabiProvider(FilesystemProvider):
         token: Token = environ["manabi.token"]
         if path.lstrip("/") != str(token.path):
             return ManabiFolderResource(path, environ)
-        else:
-            path = token.path_as_url()
-            fp = self._loc_to_file_path(path, environ)
-            return self.get_file_resource(path, environ, fp)
+
+        path = token.path_as_url()
+        fp = self._loc_to_file_path(path, environ)
+        return self.get_file_resource(path, environ, fp)
 
 
 class ManabiS3FileResource(ManabiFileResourceMixin, DAVNonCollection):
@@ -227,9 +227,8 @@ class ManabiS3FileResource(ManabiFileResourceMixin, DAVNonCollection):
             transport_params={"client": self.s3},
         )
 
-    def begin_write(self, *, content_type):
-        """
-        Open content as a stream for writing.
+    def begin_write(self, *, content_type=None):
+        """Open content as a stream for writing.
 
         We can't call `super()` here, because we need to use `open` from `smart_open`.
         """
@@ -260,7 +259,7 @@ class ManabiS3Provider(ManabiProvider):
         super(FilesystemProvider, self).__init__()
 
         if not root_folder:
-            raise ValueError("Invalid root path: {dir}".format(dir=root_folder))
+            raise ValueError(f"Invalid root path: {root_folder}")
 
         self.root_folder_path = str(root_folder)
         self.readonly = readonly
@@ -269,7 +268,7 @@ class ManabiS3Provider(ManabiProvider):
         else:
             self.shadow = {}
 
-        self.fs_opts = {}
+        self.fs_opts: Dict[str, Any] = {}
         # Get shadow map and convert keys to lower case
         self.shadow_map = self.fs_opts.get("shadow_map") or {}
         if self.shadow_map:

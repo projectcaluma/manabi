@@ -8,6 +8,7 @@ from typing import Any, Dict
 from urllib import request
 from urllib.error import HTTPError
 
+import pytest
 import requests
 from wsgidav.util import get_module_logger
 
@@ -107,11 +108,11 @@ def test_lock_two_server(server_dir, lock_storage):
             token = get_lock_token(xml)
             assert res.status == 200
 
-            try:
+            with pytest.raises(HTTPError) as e:
                 # Now the other server should fail without token
                 res, xml = http("LOCK", req2)
-            except HTTPError as e:
-                assert e.status == 423
+
+            assert e.value.status == 423
 
             # Switch server
             res, xml = http("LOCK", req2, token=token)
@@ -187,8 +188,7 @@ def run_lock_test(req):
             res, xml = http("UNLOCK", req, token=token)
             if res.status in (200, 204):
                 return (Results.LOCKED_AND_UNLOCKED, f"status: {res.status}")
-            else:
-                return (Results.LOCKED_UNLOCK_FAILED, f"status: {res.status}")
+            return (Results.LOCKED_UNLOCK_FAILED, f"status: {res.status}")
         return (Results.FIRST_LOCK_FAILED, f"status: {res.status}")
     except HTTPError as e:
         if e.status == 500:
@@ -198,8 +198,7 @@ def run_lock_test(req):
         else:
             if e.status == 423:
                 return (Results.FIRST_LOCK_FAILED, e)
-            else:
-                return (Results.UNKNOWN_ERROR, e)
+            return (Results.UNKNOWN_ERROR, e)
     except Exception as e:
         return (False, e)
 

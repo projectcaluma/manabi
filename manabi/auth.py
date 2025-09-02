@@ -103,9 +103,9 @@ class ManabiAuthenticator(BaseMiddleware):
         ttl = config.ttl.refresh
         if cookie:
             cookie = SimpleCookie(cookie)
-            refresh = cookie.get(initial.ciphertext)
-            if refresh and refresh.value:
-                refresh = Token.from_ciphertext(config.key, refresh.value)
+            refresh_cookie = cookie.get(initial.ciphertext)
+            if refresh_cookie and refresh_cookie.value:
+                refresh = Token.from_ciphertext(config.key, refresh_cookie.value)
                 if refresh.refresh(config.ttl) == State.valid:
                     return self.refresh(id_, info, refresh, ttl, dir_access)
 

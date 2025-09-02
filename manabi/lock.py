@@ -35,11 +35,8 @@ class ManabiTimeoutMixin:
         max_timeout = self.max_timeout
         timeout = lock.get("timeout")
 
-        if not timeout:
+        if not timeout or timeout > max_timeout:
             lock["timeout"] = max_timeout
-        else:
-            if timeout > max_timeout:
-                lock["timeout"] = max_timeout
 
 
 class ManabiContextLockMixin(ABC):
@@ -231,10 +228,7 @@ class ManabiPostgresDict(MutableMapping):
             cursor = self._storage_object().execute(
                 "SELECT 1 FROM manabi_lock WHERE token = %s", (str(token),)
             )
-            if cursor.fetchone() is None:
-                return False
-            else:
-                return True
+            return cursor.fetchone() is not None
 
     def __setitem__(self, token, lock):
         with self._lock:
@@ -300,7 +294,7 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         try:
             self._cursor.execute(*args, **kwargs)
         except (InterfaceError, OperationalError):
-            _logger.warn("Postgres connection lost, reconnecting")
+            _logger.warning("Postgres connection lost, reconnecting")
 
             self.connect()
             self._cursor.execute(*args, **kwargs)

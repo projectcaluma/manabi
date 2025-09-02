@@ -40,7 +40,7 @@ def test_key_validator(config):
     with pytest.raises(TypeError):
         # well we want to test what happens if it is not correctly typed
         key.data = "huhu"  # type: ignore
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         # well we want to test what happens if it is not correctly typed
         key.data = b"huhu"  # type: ignore
 
@@ -155,10 +155,10 @@ def token_roundtrip(tamper: bool, expire: bool, path: str, payload: OptionalProp
         assert _decode(key, data, ttl) == (Path(path), payload)
 
 
-@pytest.mark.parametrize("tamper", (True, False))
-@pytest.mark.parametrize("expire", (True, False))
-@pytest.mark.parametrize("path", ("hello", "asdf.docx"))
-@pytest.mark.parametrize("payload", ("hello", 3, [3, 3], None))
+@pytest.mark.parametrize("tamper", [True, False])
+@pytest.mark.parametrize("expire", [True, False])
+@pytest.mark.parametrize("path", ["hello", "asdf.docx"])
+@pytest.mark.parametrize("payload", ["hello", 3, [3, 3], None])
 def test_token_roundtrip(tamper: bool, expire: bool, path: str, payload: OptionalProp):
     token_roundtrip(tamper, expire, path, payload)
 
@@ -198,7 +198,7 @@ def cargo_build():
 
 @pytest.mark.skipif(cargo_build(), reason="needs rustc and cargo")
 def test_other_impl_decode(cargo):
-    other_impl_decode("hello world".encode("UTF-8"))
+    other_impl_decode(b"hello world")
 
 
 # TODO test binary data when branca-rust supports binary data:

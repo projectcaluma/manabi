@@ -1,7 +1,7 @@
 import calendar
 import os
 import threading
-from datetime import datetime
+from datetime import UTC, datetime
 from email.utils import formatdate
 from http.cookies import SimpleCookie
 from inspect import getsource
@@ -88,13 +88,13 @@ def set_cookie(
 ):
     cookie: SimpleCookie = SimpleCookie()
     cookie[key] = value
-    date = datetime.utcnow()
+    date = datetime.now(UTC)
     unixtime = calendar.timegm(date.utctimetuple())
     cookie[key]["expires"] = get_rfc1123_time(unixtime + ttl)
     if info.secure:
         cookie[key]["secure"] = True
         cookie[key]["httponly"] = True
-    headers.append(cast(Tuple[str, str], tuple(str(cookie).split(": "))))
+    headers.append(cast("Tuple[str, str]", tuple(str(cookie).split(": "))))
     info.start_response(status, headers, exc_info)
 
 
@@ -104,7 +104,7 @@ def get_boto_client(
     aws_secret_access_key=None,
     region_name=None,
 ):
-    s3 = boto3.client(
+    return boto3.client(
         "s3",
         endpoint_url=endpoint_url
         or os.environ.get("S3_ENDPOINT", "http://127.0.0.1:9000"),
@@ -114,4 +114,3 @@ def get_boto_client(
         or os.environ.get("S3_SECRET_ACCESS_KEY", "secretsecret"),
         region_name=region_name or os.environ.get("S3_REGION", "us-east-1"),
     )
-    return s3

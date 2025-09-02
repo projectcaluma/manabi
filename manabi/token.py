@@ -1,6 +1,6 @@
 import calendar
 import struct
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 from typing import Optional, Tuple, Union
@@ -22,7 +22,7 @@ class EncodingError(Exception):
 
 
 def now() -> int:
-    return calendar.timegm(datetime.utcnow().timetuple())
+    return calendar.timegm(datetime.now(UTC).timetuple())
 
 
 @dataclass
@@ -99,8 +99,8 @@ class Token:
     def from_token(cls, token: "Token", timestamp: Optional[int] = None) -> "Token":
         if timestamp is None:
             return cls(token.key, token.path, token.payload, now())
-        else:
-            return cls(token.key, token.path, token.payload, timestamp)
+
+        return cls(token.key, token.path, token.payload, timestamp)
 
     @classmethod
     def from_ciphertext(cls, key: Key, ciphertext: str) -> "Token":

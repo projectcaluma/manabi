@@ -17,7 +17,7 @@ class CallableClass:
 
 
 def test_callable():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError):  # noqa: PT011
         # well we want to test what happens if it is not correctly typed
         CallableClass(True)  # type: ignore
     CallableClass(test_callable)

@@ -84,5 +84,3 @@ class ResponseLogger(BaseMiddleware):
                 sub_app_start_response.response_headers,
                 sub_app_start_response.exc_info,
             )
-
-        return
