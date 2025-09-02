@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Install poetry
         run: pipx install poetry
@@ -31,7 +31,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
           cache: "poetry"
 
       - name: Install dependencies
@@ -40,17 +40,14 @@ jobs:
       - name: Workaround mpyp not type-checking wsgidav
         run: poetry run python -m manabi.mypy_fix
 
-      - name: Run flake8
-        run: poetry run flake8 manabi
-
       - name: Run mypy
         run: poetry run mypy manabi
 
-      - name: Run isort
-        run: poetry run isort --check-only manabi
+      - name: Run ruff check
+        run: poetry run ruff check manabi
 
-      - name: Run black
-        run: poetry run black --check manabi
+      - name: Run ruff format
+        run: poetry run ruff format manabi
 
   compatibility-tests:
     name: Compatibility tests
@@ -60,11 +57,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - "3.7"
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
+          - "3.12"
+          - "3.13"
 
     services:
       postgres:
@@ -82,7 +76,7 @@ jobs:
           - 5432:5432
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Set hypothesis to ci-profile
         run: echo "HYPOTHESIS_PROFILE=ci" >> $GITHUB_ENV

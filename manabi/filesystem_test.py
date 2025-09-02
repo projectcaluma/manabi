@@ -10,12 +10,12 @@ from .conftest import TEST_FILES_DIR
 
 
 @pytest.mark.parametrize(
-    "config,use_s3,file_name",
+    ("config", "use_s3", "file_name"),
     [(True, True, "asdf-s3.docx"), (False, False, "asdf.docx")],
     indirect=["config"],
 )
 @pytest.mark.parametrize(
-    "tamper, exists, expect_status",
+    ("tamper", "exists", "expect_status"),
     [(True, True, 403), (False, True, 204), (True, False, 403), (False, False, 403)],
 )
 def test_get_and_put(
@@ -47,7 +47,7 @@ def test_get_and_put(
 
 
 @pytest.mark.parametrize(
-    "config,use_s3,file_name",
+    ("config", "use_s3", "file_name"),
     [(True, True, "asdf-s3.docx"), (False, False, "asdf.docx")],
     indirect=["config"],
 )
@@ -104,7 +104,7 @@ def test_get_and_put_s3_integration(
 
 
 @pytest.mark.parametrize(
-    "hook_status, expect_status",
+    ("hook_status", "expect_status"),
     [
         (None, 204),
         (403, 403),
@@ -125,7 +125,9 @@ def test_get_and_put_hooked(
         assert res.status_code == expect_status
 
 
-@pytest.mark.parametrize("callback_return, expect_status", [(False, 403), (True, 204)])
+@pytest.mark.parametrize(
+    ("callback_return", "expect_status"), [(False, 403), (True, 204)]
+)
 def test_get_and_put_called(
     callback_return,
     expect_status,
