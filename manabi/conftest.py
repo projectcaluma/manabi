@@ -9,7 +9,7 @@ from unittest import mock as unitmock
 import pytest
 from hypothesis import settings
 from moto import mock_aws
-from psycopg2 import connect
+from psycopg import connect
 
 from . import mock
 from .log import verbose_logging

@@ -9,9 +9,13 @@ from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Callable
 
-import psycopg2.extensions
-from psycopg2 import InterfaceError, OperationalError, connect
-from psycopg2.extensions import connection as PsycopgConnection
+from psycopg import (
+    Connection as PsycopgConnection,
+    InterfaceError,
+    IsolationLevel,
+    OperationalError,
+    connect,
+)
 from wsgidav.lock_man.lock_storage import LockStorageDict
 from wsgidav.util import get_module_logger
 
@@ -282,9 +286,7 @@ class ManabiDbLockStorage(LockStorageDict, ManabiTimeoutMixin):
         self._connection = connect(self._postgres_dsn)
         self._connection.commit()
         self._connection.autocommit = False
-        self._connection.set_session(
-            isolation_level=psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE
-        )
+        self._connection.isolation_level = IsolationLevel.SERIALIZABLE
         self._cursor = self._connection.cursor()
 
     def open(self):
