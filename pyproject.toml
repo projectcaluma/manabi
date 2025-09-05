@@ -48,7 +48,7 @@ hypothesis = "6.138.13"
 moto = {extras = ["s3"], version = "5.1.11"}
 mypy = "1.17.1"
 pdbpp = "0.11.7"
-pytest = "8.4.1"
+pytest = "8.4.2"
 pytest-env = "1.1.5"
 python-semantic-release = "7.34.6"
 requests = "2.32.5"
