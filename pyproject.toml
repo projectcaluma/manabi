@@ -46,7 +46,7 @@ smart-open = {extras = ["s3"], version = ">=6.4,<8.0"}
 cheroot = "10.0.1"
 hypothesis = "6.138.13"
 moto = {extras = ["s3"], version = "5.1.11"}
-mypy = "1.17.1"
+mypy = "1.18.1"
 pdbpp = "0.11.7"
 pytest = "8.4.1"
 pytest-env = "1.1.5"
