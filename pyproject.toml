@@ -45,7 +45,7 @@ smart-open = {extras = ["s3"], version = ">=6.4,<8.0"}
 [tool.poetry.group.dev.dependencies]
 cheroot = "10.0.1"
 hypothesis = "6.138.13"
-moto = {extras = ["s3"], version = "5.1.11"}
+moto = {extras = ["s3"], version = "5.1.12"}
 mypy = "1.17.1"
 pdbpp = "0.11.7"
 pytest = "8.4.1"
