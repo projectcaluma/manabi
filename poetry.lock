@@ -259,14 +259,14 @@ files = [
 
 [[package]]
 name = "cheroot"
-version = "10.0.1"
+version = "11.0.0"
 description = "Highly-optimized, pure-python HTTP server"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "cheroot-10.0.1-py3-none-any.whl", hash = "sha256:6ea332f20bfcede14e66174d112b30e9807492320d737ca628badc924d997595"},
-    {file = "cheroot-10.0.1.tar.gz", hash = "sha256:e0b82f797658d26b8613ec8eb563c3b08e6bd6a7921e9d5089bd1175ad1b1740"},
+    {file = "cheroot-11.0.0-py3-none-any.whl", hash = "sha256:0e3aea62026b5e70df6e63259e345bdcff404daf4b8a11204f46d4234959fccd"},
+    {file = "cheroot-11.0.0.tar.gz", hash = "sha256:dd414eda6bdb15140e864bc1d1c9625030375d14cbe0b290092867368924a52f"},
 ]
 
 [package.dependencies]
@@ -2021,4 +2021,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4"
-content-hash = "7305a22a5b193de61248e638aa5070bdf716a730b23c3dfd42fab348b8f6ff6f"
+content-hash = "1ce7f4908407696b1fcbecd9b9d0b79eacaa8280172ae8baae03cfd32624fdf3"
