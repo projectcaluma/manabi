@@ -5,9 +5,12 @@ from typing import Any, Callable, Dict, List
 from unittest.mock import MagicMock
 
 from wsgidav.mw.base_mw import BaseMiddleware
+from wsgidav.util import get_module_logger
 
 from .token import Config, State, Token
 from .util import AppInfo, get_rfc1123_time, set_cookie
+
+_logger = get_module_logger(__name__)
 
 _error_message_403 = """
 <html>
@@ -38,6 +41,7 @@ class ManabiAuthenticator(BaseMiddleware):
         return manabi["secure"]
 
     def access_denied(self, start_response: Callable, reason: str = "") -> List[bytes]:
+        _logger.info(f"Access denied: {reason}")
         body = _error_message_403
         content = body.format(reason).encode("UTF-8")
         start_response(
@@ -65,6 +69,7 @@ class ManabiAuthenticator(BaseMiddleware):
     def refresh(
         self, id_: str, info: AppInfo, token: Token, ttl: int, dir_access: bool
     ):
+        _logger.info(f"Refreshing token id: {id_[:18]}..., ttl: {ttl}")
         new = Token.from_token(token)
         self.update_env(info, token, id_, dir_access)
         return self.next_app(
@@ -100,11 +105,13 @@ class ManabiAuthenticator(BaseMiddleware):
             return self.access_denied(start_response, check.value[1])
 
         cookie = environ.get("HTTP_COOKIE")
+        _logger.info(f"HTTP_COOKIE: {cookie}")
         ttl = config.ttl.refresh
         if cookie:
             cookie = SimpleCookie(cookie)
             refresh_cookie = cookie.get(initial.ciphertext)
             if refresh_cookie and refresh_cookie.value:
+                _logger.info("Refresh cookie found, validating")
                 refresh = Token.from_ciphertext(config.key, refresh_cookie.value)
                 if refresh.refresh(config.ttl) == State.valid:
                     return self.refresh(id_, info, refresh, ttl, dir_access)

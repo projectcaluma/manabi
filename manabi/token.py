@@ -8,9 +8,12 @@ from typing import Optional, Tuple, Union
 import umsgpack  # type: ignore
 from attr import Factory, dataclass
 from branca import Branca  # type: ignore
+from wsgidav.util import get_module_logger
 
 from .type_alias import OptionalProp, PropType
 from .util import cattrib, from_string
+
+_logger = get_module_logger(__name__)
 
 
 class DecodingError(Exception):
@@ -108,25 +111,30 @@ class Token:
         branca = Branca(key.data)
         try:
             timestamp = branca.timestamp(ciphertext)
-        except (struct.error, ValueError):
+        except (struct.error, ValueError) as e:
+            _logger.info(f"Failed to extract timestamp from token: {e}")
             return cls(key, None, None)
         try:
             token_path, token_payload = _decode(branca, ciphertext)
-        except DecodingError:
+        except DecodingError as e:
             # Handle decoding errors by creating a invalid token
+            _logger.info(f"Token decoding error: {e}")
             return cls(key, None, timestamp)
         return cls(key, token_path, token_payload, timestamp, ciphertext)
 
     def check(self, ttl: Optional[int] = None) -> State:
         if self.path is None or self.timestamp is None:
+            _logger.info("Token check failed: path or timestamp is None")
             return State.invalid
         if ttl is not None:
             future = self.timestamp + ttl
             past = self.timestamp - 1
             t = now()
             if t < past:
+                _logger.info("Token not valid yet (clock skew?)")
                 return State.not_valid_yet
             if t > future:
+                _logger.info(f"Token expired (age: {t - self.timestamp}s, ttl: {ttl}s)")
                 return State.expired
         return State.valid
 

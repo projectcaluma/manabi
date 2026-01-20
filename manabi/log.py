@@ -34,6 +34,8 @@ def verbose_logging() -> None:
             "enable_loggers": [
                 "manabi.log",
                 "manabi.lock",
+                "manabi.auth",
+                "manabi.token",
                 "lock_storage",
                 "lock_storage",
                 "request_resolver",
