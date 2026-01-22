@@ -45,6 +45,7 @@ def verbose_logging() -> None:
                 "fs_dav_provider",
                 "dir_browser",
                 "server",
+                "wsgidav",
             ],
         }
     )
