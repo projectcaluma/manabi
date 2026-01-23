@@ -69,7 +69,6 @@ class ManabiAuthenticator(BaseMiddleware):
     def refresh(
         self, id_: str, info: AppInfo, token: Token, ttl: int, dir_access: bool
     ):
-        _logger.info(f"Refreshing token id: {id_[:18]}..., ttl: {ttl}")
         new = Token.from_token(token)
         self.update_env(info, token, id_, dir_access)
         return self.next_app(
@@ -111,12 +110,15 @@ class ManabiAuthenticator(BaseMiddleware):
             cookie = SimpleCookie(cookie)
             refresh_cookie = cookie.get(initial.ciphertext)
             if refresh_cookie and refresh_cookie.value:
-                _logger.info("Refresh cookie found, validating")
                 refresh = Token.from_ciphertext(config.key, refresh_cookie.value)
                 if refresh.refresh(config.ttl) == State.valid:
+                    _logger.info("valid refresh cookie found, refreshing...")
                     return self.refresh(id_, info, refresh, ttl, dir_access)
+                _logger.info("refresh cookie invalid")
 
         check = initial.initial(config.ttl)
         if initial.initial(config.ttl) == State.valid:
+            _logger.info("initial login valid, refreshing")
             return self.refresh(id_, info, initial, ttl, dir_access)
+        _logger.info("initial login invalid, access denied")
         return self.access_denied(start_response, check.value[1])

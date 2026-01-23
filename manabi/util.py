@@ -13,8 +13,11 @@ import requests
 from attr import attrib, dataclass
 
 from .type_alias import TypeType
+from wsgidav.util import get_module_logger
 
 _local_session = threading.local()
+
+_logger = get_module_logger(__name__)
 
 
 def requests_session() -> requests.Session:
@@ -95,6 +98,7 @@ def set_cookie(
         cookie[key]["secure"] = True
         cookie[key]["httponly"] = True
     headers.append(cast("Tuple[str, str]", tuple(str(cookie).split(": "))))
+    _logger.info(f"SET COOKIE: {cookie}")
     info.start_response(status, headers, exc_info)
 
 
